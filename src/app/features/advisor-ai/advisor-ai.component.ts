@@ -3,11 +3,15 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { ChatMessage, ChatWindowSize } from '../../core/models/chat';
+import { Observable, from } from 'rxjs';
+import { ChatMessage, ChatRequest, ChatResponse, ChatWindowSize } from '../../core/models/chat';
 import { errorDetail } from '../../core/interceptors/error.interceptor';
 import { ChatService } from '../../core/services/chat.service';
 import { OrdersStore } from '../../core/state/orders.store';
 import { WorkspaceStore } from '../../core/state/workspace.store';
+import { BrowserAgentService } from '../../core/webllm/browser-agent.service';
+import { WEBLLM_PROVIDER_ID } from '../../core/webllm/webllm.models';
+import { WebLlmService } from '../../core/webllm/webllm.service';
 import { ChatMessageComponent } from './chat-message.component';
 
 export const EXAMPLE_QUESTIONS = [
@@ -35,6 +39,8 @@ export class AdvisorAiComponent {
   private readonly chat = inject(ChatService);
   private readonly workspace = inject(WorkspaceStore);
   private readonly orders = inject(OrdersStore);
+  private readonly browserAgent = inject(BrowserAgentService);
+  protected readonly webllm = inject(WebLlmService);
 
   readonly open = signal(false);
   readonly size = signal<ChatWindowSize>('normal');
@@ -46,6 +52,7 @@ export class AdvisorAiComponent {
   protected readonly examples = EXAMPLE_QUESTIONS;
   protected readonly providerLabel = computed(() => this.workspace.llmProvider()?.label ?? this.workspace.llm().provider);
   protected readonly modelName = computed(() => this.workspace.llm().model ?? '');
+  protected readonly isWebLlm = computed(() => this.workspace.llm().provider === WEBLLM_PROVIDER_ID);
   private readonly scroller = viewChild<ElementRef<HTMLDivElement>>('scroller');
 
   constructor() {
@@ -72,6 +79,7 @@ export class AdvisorAiComponent {
 
   newConversation(): void {
     const old = this.threadId();
+    this.browserAgent.reset(old);
     this.chat.reset(old).subscribe({ error: () => undefined });
     this.threadId.set(newThreadId());
     this.messages.set([]);
@@ -91,28 +99,31 @@ export class AdvisorAiComponent {
     this.messages.update((m) => [...m, { role: 'user', text: message }]);
     this.sending.set(true);
     const { provider, model } = this.workspace.llm();
-    this.chat
-      .send({
-        message,
-        thread_id: this.threadId(),
-        provider,
-        model,
-        account_id: this.workspace.accountId(),
-        model_id: this.workspace.modelId(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.sending.set(false);
-          this.messages.update((m) => [
-            ...m,
-            { role: 'assistant', text: res.text, toolCalls: res.tool_calls, ordersAdded: res.orders_added },
-          ]);
-          if (res.orders_added > 0) this.orders.refresh();
-        },
-        error: (err) => {
-          this.sending.set(false);
-          this.messages.update((m) => [...m, { role: 'assistant', text: `⚠️ ${errorDetail(err)}`, error: true }]);
-        },
-      });
+    this.ask({
+      message,
+      thread_id: this.threadId(),
+      provider,
+      model,
+      account_id: this.workspace.accountId(),
+      model_id: this.workspace.modelId(),
+    }).subscribe({
+      next: (res) => {
+        this.sending.set(false);
+        this.messages.update((m) => [
+          ...m,
+          { role: 'assistant', text: res.text, toolCalls: res.tool_calls, ordersAdded: res.orders_added },
+        ]);
+        if (res.orders_added > 0) this.orders.refresh();
+      },
+      error: (err) => {
+        this.sending.set(false);
+        this.messages.update((m) => [...m, { role: 'assistant', text: `⚠️ ${errorDetail(err)}`, error: true }]);
+      },
+    });
+  }
+
+  private ask(req: ChatRequest): Observable<ChatResponse> {
+    if (req.provider !== WEBLLM_PROVIDER_ID) return this.chat.send(req);
+    return from(this.browserAgent.ask(req.message, req.thread_id, req.model ?? '', req.account_id, req.model_id));
   }
 }

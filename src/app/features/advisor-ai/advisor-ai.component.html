@@ -33,7 +33,13 @@
           <app-chat-message [message]="m" />
         }
         @if (sending()) {
-          <p class="typing" data-testid="typing">Thinking… (local models can take up to a minute)</p>
+          @if (isWebLlm() && webllm.status() === 'loading') {
+            <p class="typing" data-testid="typing">
+              Loading the model in your browser ({{ (webllm.progress() * 100).toFixed(0) }}%)… {{ webllm.progressText() }}
+            </p>
+          } @else {
+            <p class="typing" data-testid="typing">Thinking… (local models can take up to a minute)</p>
+          }
         }
       </div>
 

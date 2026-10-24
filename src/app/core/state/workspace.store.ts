@@ -4,6 +4,7 @@ import { LlmProvider, LlmSelection } from '../models/llm';
 import { PlanInputs, SimSettings, SimulationRequest } from '../models/simulation';
 import { LlmService } from '../services/llm.service';
 import { SourcesService } from '../services/sources.service';
+import { WEBLLM_PROVIDER } from '../webllm/webllm.models';
 
 export const DEFAULT_SIM_SETTINGS: SimSettings = {
   trials: 10_000,
@@ -58,9 +59,9 @@ export class WorkspaceStore {
       if (list.length) this.selectSource(list[0].name);
     });
     this.llmApi.providers().subscribe((providers) => {
-      this.llmProviders.set(providers);
-      const first = providers[0];
-      if (first) this.llm.set({ provider: first.id, model: first.default_model });
+      const all = [...providers, WEBLLM_PROVIDER];
+      this.llmProviders.set(all);
+      this.llm.set({ provider: all[0].id, model: all[0].default_model });
     });
   }
 
