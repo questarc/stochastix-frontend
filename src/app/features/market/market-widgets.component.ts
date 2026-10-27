@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { errorDetail } from '../../core/interceptors/error.interceptor';
 import { CorporateActionsFeed, EarningsFeed, NewsFeed } from '../../core/models/market';
 import { MarketService } from '../../core/services/market.service';
+import { MarketHeatmapComponent } from './market-heatmap.component';
 
 type Kind = 'news' | 'earnings' | 'actions';
 
@@ -16,7 +17,8 @@ type Kind = 'news' | 'earnings' | 'actions';
 @Component({
   selector: 'app-market-widgets',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, DecimalPipe, MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule, MatTooltipModule],
+  imports: [DatePipe, DecimalPipe, MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule, MatTooltipModule,
+    MarketHeatmapComponent],
   templateUrl: './market-widgets.component.html',
   styleUrl: './market-widgets.component.scss',
 })

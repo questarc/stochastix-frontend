@@ -2,7 +2,7 @@ import { HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SKIP_ERROR_SNACKBAR } from '../interceptors/error.interceptor';
-import { CorporateActionsFeed, EarningsFeed, NewsFeed } from '../models/market';
+import { CorporateActionsFeed, EarningsFeed, HeatmapFeed, NewsFeed } from '../models/market';
 import { ApiService } from './api.service';
 
 /** MarketAnalyzerAgent, EarningsAgent and CorporateActionsAgent (back end, free no-key sources). */
@@ -21,5 +21,9 @@ export class MarketService {
 
   corporateActions(days = 30, refresh = false): Observable<CorporateActionsFeed> {
     return this.api.get<CorporateActionsFeed>('/market/corporate-actions', { days, refresh: refresh || null }, this.context);
+  }
+
+  heatmap(size = 100, refresh = false): Observable<HeatmapFeed> {
+    return this.api.get<HeatmapFeed>('/market/heatmap', { size, refresh: refresh || null }, this.context);
   }
 }

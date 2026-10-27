@@ -46,6 +46,30 @@ export interface CorporateAction {
   held_by: string[];
 }
 
+export interface HeatmapItem {
+  symbol: string;
+  name: string;
+  sector: string;
+  industry: string;
+  market_cap: number;
+  change_pct: number;
+  price: number | null;
+  held_by: string[];
+}
+
+export interface SectorSummary {
+  sector: string;
+  market_cap: number;
+  count: number;
+  change_pct: number;
+}
+
+export interface HeatmapFeed extends MarketFeed<HeatmapItem> {
+  sectors: SectorSummary[];
+  breadth?: { up: number; down: number; total: number };
+  market_change_pct?: number | null;
+}
+
 export type NewsFeed = MarketFeed<NewsItem>;
 export type EarningsFeed = MarketFeed<EarningsItem>;
 export type CorporateActionsFeed = MarketFeed<CorporateAction>;

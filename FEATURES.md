@@ -10,7 +10,7 @@ Results are projections, not guarantees, and not investment advice.
 | Area | What the advisor can do |
 |---|---|
 | Header | Gradient title and caption; client name, account, portfolio value, age, risk profile, model |
-| 📊 Market watch | Three widgets on every tab: economic news, upcoming earnings, corporate actions |
+| 📊 Market watch | Widgets on every tab: economic news, upcoming earnings, corporate actions, market heatmap |
 | Sidebar — Advisor360 | Choose source agent, account and model portfolio; upload an A360 Positions CSV or go back to the default file |
 | Sidebar — Plan assumptions | Retirement age, plan end age, annual contribution, annual withdrawal (reset per account) |
 | Sidebar — Simulation | Trials (1k–50k), seed, sampling (PRNG/LHS/Sobol), copula (Gaussian/Student-t, df 3–30), return distribution |
@@ -44,6 +44,9 @@ Results are projections, not guarantees, and not investment advice.
 - **📈 Upcoming earnings** (EarningsAgent, 14 days): date, symbol, before/after market, EPS estimate.
 - **🏦 Corporate actions** (CorporateActionsAgent, 30 days): dividends (ex-date, pay date, amount) and splits (ratio);
   **Client holdings** filter.
+- **🗺️ Market heatmap** (MarketHeatmapAgent): Plotly treemap of the largest US companies grouped by sector; tile
+  size = market cap, colour = daily change (red → green, ±3% scale); ★ marks tickers held by clients; 50/100/200
+  companies; cap-weighted market change, up/down breadth and sector chips.
 - Green **Held** badge with the accounts holding the ticker; per-widget refresh, "Updated" time, unavailable-source
   notes; collapsible row.
 
@@ -81,7 +84,7 @@ src/app/
 ```powershell
 npm install          # .npmrc sets legacy-peer-deps
 npm start            # http://localhost:4200, calls http://localhost:8000/api
-npx ng test --watch=false   # 31 tests
+npx ng test --watch=false   # 33 tests
 npx ng build
 ```
 Docker: multi-stage `Dockerfile` (Node build → nginx on port 8080). nginx serves the app, proxies `/api/` to the back
