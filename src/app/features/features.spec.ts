@@ -109,6 +109,14 @@ describe('AdvisorAiComponent', () => {
     expect(el.querySelector('[data-testid="orders-notice"]')?.textContent).toContain('1 order(s) added');
   });
 
+  it('shows the Create audio button under the AI answer in the chat window', async () => {
+    const { fixture, cmp, el } = setup();
+    cmp.open.set(true);
+    cmp.send('Compare the current portfolio with the model portfolio.');
+    await fixture.whenStable();
+    expect(el.querySelector('[data-testid="voice-create"]')?.textContent).toContain('Create audio');
+  });
+
   it('moves through normal → max → min → normal and hides the input when minimized', async () => {
     const { fixture, cmp, el } = setup();
     const click = async (id: string) => {
