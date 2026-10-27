@@ -12,6 +12,7 @@ import { map } from 'rxjs';
 import { OrdersStore } from './core/state/orders.store';
 import { WorkspaceStore } from './core/state/workspace.store';
 import { AdvisorAiComponent } from './features/advisor-ai/advisor-ai.component';
+import { MarketWidgetsComponent } from './features/market/market-widgets.component';
 import { MethodologyTabComponent } from './features/methodology/methodology-tab.component';
 import { OrdersTabComponent } from './features/orders/orders-tab.component';
 import { RebalanceTabComponent } from './features/rebalance/rebalance-tab.component';
@@ -26,8 +27,8 @@ const ORDERS_TAB_INDEX = 2;
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatBadgeModule, MatButtonModule, MatIconModule, MatSidenavModule, MatTabsModule, MatToolbarModule,
-    AdvisorAiComponent, HeaderComponent, MethodologyTabComponent, OrdersTabComponent, RebalanceTabComponent,
-    SidebarComponent, SimulationTabComponent,
+    AdvisorAiComponent, HeaderComponent, MarketWidgetsComponent, MethodologyTabComponent, OrdersTabComponent,
+    RebalanceTabComponent, SidebarComponent, SimulationTabComponent,
   ],
   template: `
     <mat-sidenav-container class="container">
@@ -41,6 +42,7 @@ const ORDERS_TAB_INDEX = 2;
           </button>
         }
         <app-header />
+        <app-market-widgets />
         <mat-tab-group (selectedTabChange)="onTabChange($event)" animationDuration="0ms">
           <mat-tab label="Simulation"><app-simulation-tab /></mat-tab>
           <mat-tab label="Rebalance"><app-rebalance-tab /></mat-tab>
