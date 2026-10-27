@@ -2,7 +2,7 @@ import { HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { SKIP_ERROR_SNACKBAR } from '../interceptors/error.interceptor';
-import { ChatResponse, ToolCall } from '../models/chat';
+import { AudioInfo, ChatResponse, ToolCall } from '../models/chat';
 import { Order } from '../models/order';
 import { ApiService } from '../services/api.service';
 import { OpenAiTool, TOOL_INSTRUCTIONS, describeTools, parseToolCalls } from './tool-calls';
@@ -19,6 +19,7 @@ interface ToolRunResponse {
   result: string;
   orders_added: number;
   orders: Order[];
+  audio?: AudioInfo[];
 }
 
 type Message = { role: 'system' | 'user' | 'assistant'; content: string };
@@ -60,6 +61,7 @@ export class BrowserAgentService {
     const turn: Message[] = [{ role: 'user', content: selectionPrefix(accountId, modelId) + message }];
     const toolCalls: ToolCall[] = [];
     const orders: Order[] = [];
+    const audio: AudioInfo[] = [];
     let text = '';
 
     for (let step = 0; step < MAX_AGENT_STEPS; step++) {
@@ -80,6 +82,7 @@ export class BrowserAgentService {
         const run = await this.runTool(call.name, call.args);
         toolCalls.push({ tool: run.tool, args: run.args, result: run.result.slice(0, DISPLAY_RESULT_LIMIT) });
         orders.push(...run.orders);
+        audio.push(...(run.audio ?? []));
         responses.push(`<tool_response>\n{"name": "${run.tool}", "content": ${run.result.slice(0, MODEL_RESULT_LIMIT)}}\n</tool_response>`);
       }
       turn.push({ role: 'user', content: responses.join('\n') });
@@ -88,7 +91,7 @@ export class BrowserAgentService {
 
     const saved = [...history, turn[0], { role: 'assistant' as const, content: text }];
     this.threads.set(threadId, trimHistory(saved));
-    return { text, tool_calls: toolCalls, orders_added: orders.length, orders };
+    return { text, tool_calls: toolCalls, orders_added: orders.length, orders, audio };
   }
 
   reset(threadId: string): void {

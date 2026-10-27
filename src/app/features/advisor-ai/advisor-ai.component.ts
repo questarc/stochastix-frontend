@@ -99,19 +99,23 @@ export class AdvisorAiComponent {
     this.messages.update((m) => [...m, { role: 'user', text: message }]);
     this.sending.set(true);
     const { provider, model } = this.workspace.llm();
+    const accountId = this.workspace.accountId();
     this.ask({
       message,
       thread_id: this.threadId(),
       provider,
       model,
-      account_id: this.workspace.accountId(),
+      account_id: accountId,
       model_id: this.workspace.modelId(),
     }).subscribe({
       next: (res) => {
         this.sending.set(false);
         this.messages.update((m) => [
           ...m,
-          { role: 'assistant', text: res.text, toolCalls: res.tool_calls, ordersAdded: res.orders_added },
+          {
+            role: 'assistant', text: res.text, toolCalls: res.tool_calls, ordersAdded: res.orders_added,
+            accountId: res.audio?.[0]?.account_id ?? accountId, audio: res.audio?.[0] ?? null,
+          },
         ]);
         if (res.orders_added > 0) this.orders.refresh();
       },

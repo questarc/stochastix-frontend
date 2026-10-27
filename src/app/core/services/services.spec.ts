@@ -9,6 +9,8 @@ import { OrdersService } from './orders.service';
 import { RebalanceService } from './rebalance.service';
 import { SimulationService } from './simulation.service';
 import { SourcesService } from './sources.service';
+import { VoiceService } from './voice.service';
+import { AudioInfo } from '../models/chat';
 
 const API = environment.apiBaseUrl;
 const SIM = { account_id: 'A1001', trials: 10000, seed: 42, sampling: 'prng', copula: 'gaussian', copula_df: 5 } as const;
@@ -102,5 +104,14 @@ describe('API services', () => {
     expectCall('POST', `${API}/chat`, body, { text: 'ok', tool_calls: [], orders_added: 0, orders: [] });
     s.reset('t1').subscribe();
     expectCall('DELETE', `${API}/chat/t1`);
+  });
+
+  it('VoiceService creates audio and builds play/download URLs', () => {
+    const s = TestBed.inject(VoiceService);
+    s.create('Success is 76.8%.', 'A1001').subscribe();
+    expectCall('POST', `${API}/voice`, { text: 'Success is 76.8%.', account_id: 'A1001' });
+    const audio = { url: '/voice/abc' } as AudioInfo;
+    expect(s.playUrl(audio)).toBe(`${API}/voice/abc`);
+    expect(s.downloadUrl(audio)).toBe(`${API}/voice/abc?download=true`);
   });
 });
