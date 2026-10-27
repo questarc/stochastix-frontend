@@ -1,4 +1,5 @@
 import { Order } from './order';
+import { VideoJob } from './video';
 
 export interface ChatRequest {
   message: string;
@@ -33,6 +34,7 @@ export interface ChatResponse {
   orders_added: number;
   orders: Order[];
   audio?: AudioInfo[];
+  video_jobs?: VideoJob[];
 }
 
 export interface ChatMessage {
@@ -43,6 +45,7 @@ export interface ChatMessage {
   error?: boolean;
   accountId?: string | null;
   audio?: AudioInfo | null;
+  videoJob?: VideoJob | null;
 }
 
 export type ChatWindowSize = 'normal' | 'max' | 'min';

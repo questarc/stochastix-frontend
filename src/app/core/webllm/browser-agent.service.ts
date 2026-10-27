@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { SKIP_ERROR_SNACKBAR } from '../interceptors/error.interceptor';
 import { AudioInfo, ChatResponse, ToolCall } from '../models/chat';
+import { VideoJob } from '../models/video';
 import { Order } from '../models/order';
 import { ApiService } from '../services/api.service';
 import { OpenAiTool, TOOL_INSTRUCTIONS, describeTools, parseToolCalls } from './tool-calls';
@@ -20,6 +21,7 @@ interface ToolRunResponse {
   orders_added: number;
   orders: Order[];
   audio?: AudioInfo[];
+  video_jobs?: VideoJob[];
 }
 
 type Message = { role: 'system' | 'user' | 'assistant'; content: string };
@@ -62,6 +64,7 @@ export class BrowserAgentService {
     const toolCalls: ToolCall[] = [];
     const orders: Order[] = [];
     const audio: AudioInfo[] = [];
+    const videoJobs: VideoJob[] = [];
     let text = '';
 
     for (let step = 0; step < MAX_AGENT_STEPS; step++) {
@@ -83,6 +86,7 @@ export class BrowserAgentService {
         toolCalls.push({ tool: run.tool, args: run.args, result: run.result.slice(0, DISPLAY_RESULT_LIMIT) });
         orders.push(...run.orders);
         audio.push(...(run.audio ?? []));
+        videoJobs.push(...(run.video_jobs ?? []));
         responses.push(`<tool_response>\n{"name": "${run.tool}", "content": ${run.result.slice(0, MODEL_RESULT_LIMIT)}}\n</tool_response>`);
       }
       turn.push({ role: 'user', content: responses.join('\n') });
@@ -91,7 +95,7 @@ export class BrowserAgentService {
 
     const saved = [...history, turn[0], { role: 'assistant' as const, content: text }];
     this.threads.set(threadId, trimHistory(saved));
-    return { text, tool_calls: toolCalls, orders_added: orders.length, orders, audio };
+    return { text, tool_calls: toolCalls, orders_added: orders.length, orders, audio, video_jobs: videoJobs };
   }
 
   reset(threadId: string): void {

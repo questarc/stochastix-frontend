@@ -11,6 +11,8 @@ import { SimulationService } from './simulation.service';
 import { SourcesService } from './sources.service';
 import { VoiceService } from './voice.service';
 import { AudioInfo } from '../models/chat';
+import { VideoInfo } from '../models/video';
+import { VideoService } from './video.service';
 
 const API = environment.apiBaseUrl;
 const SIM = { account_id: 'A1001', trials: 10000, seed: 42, sampling: 'prng', copula: 'gaussian', copula_df: 5 } as const;
@@ -113,5 +115,20 @@ describe('API services', () => {
     const audio = { url: '/voice/abc' } as AudioInfo;
     expect(s.playUrl(audio)).toBe(`${API}/voice/abc`);
     expect(s.downloadUrl(audio)).toBe(`${API}/voice/abc?download=true`);
+  });
+
+  it('VideoService starts a job, follows it until done and builds URLs', async () => {
+    const s = TestBed.inject(VideoService);
+    const req = { ...SIM, include_rebalance: true };
+    const seen: string[] = [];
+    s.start(req).subscribe();
+    expectCall('POST', `${API}/video`, req, { job_id: 'j1', status: 'queued' });
+    s.watch('j1', 1000).subscribe((j) => seen.push(j.status));
+    await new Promise((r) => setTimeout(r, 0));
+    expectCall('GET', `${API}/video/jobs/j1`, undefined, { job_id: 'j1', status: 'done', progress: 1 });
+    expect(seen).toEqual(['done']);
+    const video = { url: '/video/v1' } as VideoInfo;
+    expect(s.playUrl(video)).toBe(`${API}/video/v1`);
+    expect(s.downloadUrl(video)).toBe(`${API}/video/v1?download=true`);
   });
 });

@@ -6,7 +6,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MarkdownComponent } from 'ngx-markdown';
 import { errorDetail } from '../../core/interceptors/error.interceptor';
 import { AudioInfo, ChatMessage } from '../../core/models/chat';
+import { VideoRequest } from '../../core/models/video';
 import { VoiceService } from '../../core/services/voice.service';
+import { WorkspaceStore } from '../../core/state/workspace.store';
+import { VideoPanelComponent } from '../../shared/video-panel.component';
 
 /** Escape `$` so markdown renderers never read dollar amounts as maths. */
 export function escapeDollars(text: string): string {
@@ -24,7 +27,7 @@ export function parseToolResult(result: string): unknown {
 @Component({
   selector: 'app-chat-message',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, MatExpansionModule, MatIconModule, MarkdownComponent, JsonPipe],
+  imports: [MatButtonModule, MatExpansionModule, MatIconModule, MarkdownComponent, JsonPipe, VideoPanelComponent],
   template: `
     @let m = message();
     <div class="bubble" [class.user]="m.role === 'user'" [class.assistant]="m.role === 'assistant'" [class.error]="m.error">
@@ -52,6 +55,8 @@ export function parseToolResult(result: string): unknown {
           <span class="voice-error">⚠️ {{ e }}</span>
         }
       </div>
+      <app-video-panel class="video" [request]="videoRequest()" [initialJob]="m.videoJob ?? null"
+                       label="Create video" [compact]="true" data-testid="chat-video" />
     }
     @if (m.ordersAdded) {
       <p class="orders-notice" data-testid="orders-notice">
@@ -90,10 +95,12 @@ export function parseToolResult(result: string): unknown {
     audio { height: 2.25rem; max-width: 100%; }
     .voice-note { font-size: 0.75rem; color: var(--app-muted); }
     .voice-error { font-size: 0.8rem; color: var(--app-negative); }
+    .video { margin-top: 0.4rem; align-self: stretch; }
   `,
 })
 export class ChatMessageComponent {
   private readonly voice = inject(VoiceService);
+  private readonly workspace = inject(WorkspaceStore);
 
   readonly message = input.required<ChatMessage>();
   readonly audio = signal<AudioInfo | null>(null);
@@ -105,6 +112,17 @@ export class ChatMessageComponent {
   protected readonly canVoice = computed(() => {
     const m = this.message();
     return m.role === 'assistant' && !m.error && !!m.text.trim();
+  });
+  /** Video of the account this answer was about, using the current on-screen plan and settings. */
+  protected readonly videoRequest = computed<VideoRequest | null>(() => {
+    const accountId = this.message().accountId;
+    const req = this.workspace.simulationRequest();
+    if (!accountId) return null;
+    const same = req && req.account_id === accountId;
+    return same
+      ? { ...req, trials: Math.min(req.trials, 25_000), include_rebalance: true }
+      : { account_id: accountId, trials: 10_000, seed: 42, sampling: 'prng', copula: 'gaussian', copula_df: 5,
+          include_rebalance: true };
   });
 
   constructor() {

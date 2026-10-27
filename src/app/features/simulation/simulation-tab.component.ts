@@ -1,8 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { VideoRequest } from '../../core/models/video';
 import { SimulationStore } from '../../core/state/simulation.store';
 import { WorkspaceStore } from '../../core/state/workspace.store';
+import { VideoPanelComponent } from '../../shared/video-panel.component';
 import { AllocationChartComponent } from './allocation-chart.component';
 import { DepletionHistogramComponent } from './depletion-histogram.component';
 import { EndingHistogramComponent } from './ending-histogram.component';
@@ -17,9 +21,9 @@ export const ASSET_CLASSES = ['US Equity', 'Intl Equity', 'US Bonds', 'Cash', 'R
   selector: 'app-simulation-tab',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    MatButtonToggleModule, MatProgressBarModule, AllocationChartComponent, DepletionHistogramComponent,
-    EndingHistogramComponent, FanChartComponent, PositionsTableComponent, RunSettingsComponent,
-    SuccessMetricsComponent,
+    MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatProgressBarModule, AllocationChartComponent,
+    DepletionHistogramComponent, EndingHistogramComponent, FanChartComponent, PositionsTableComponent,
+    RunSettingsComponent, SuccessMetricsComponent, VideoPanelComponent,
   ],
   template: `
     @if (sim.loading() || workspace.portfolioLoading()) {
@@ -33,6 +37,19 @@ export const ASSET_CLASSES = ['US Equity', 'Intl Equity', 'US Bonds', 'Cash', 'R
     }
     @if (sim.response(); as response) {
       <app-success-metrics [response]="response" [selected]="selected()" />
+      <mat-card class="video-card" data-testid="video-card">
+        <div class="video-head">
+          <div>
+            <h3>🎬 Investor video</h3>
+            <p class="caption">A narrated 90-second walkthrough of this plan, with your animated advisor, the charts
+              and subtitles. Built from these exact results, ready to send to the client.</p>
+          </div>
+          <mat-checkbox [checked]="includeRebalance()" (change)="includeRebalance.set($event.checked)">
+            Include proposed rebalance
+          </mat-checkbox>
+        </div>
+        <app-video-panel [request]="videoRequest()" />
+      </mat-card>
       <div class="toggle">
         <span>Projection for:</span>
         <mat-button-toggle-group [value]="selected()" (change)="selected.set($event.value)" aria-label="Projection for">
@@ -57,6 +74,10 @@ export const ASSET_CLASSES = ['US Equity', 'Intl Equity', 'US Bonds', 'Cash', 'R
     .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin: 1rem 0; }
     .toggle { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; }
     .empty { opacity: 0.7; }
+    .video-card { margin: 1rem 0; padding: 1rem 1.25rem; }
+    .video-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+    .video-card h3 { margin: 0 0 0.25rem; }
+    .caption { margin: 0 0 0.75rem; font-size: 0.85rem; color: var(--app-muted); max-width: 640px; }
   `,
 })
 export class SimulationTabComponent {
@@ -64,6 +85,11 @@ export class SimulationTabComponent {
   protected readonly sim = inject(SimulationStore);
   protected readonly selected = signal<'current' | 'model'>('current');
   protected readonly assetClasses = ASSET_CLASSES;
+  protected readonly includeRebalance = signal(true);
+  protected readonly videoRequest = computed<VideoRequest | null>(() => {
+    const req = this.workspace.simulationRequest();
+    return req ? { ...req, trials: Math.min(req.trials, 25_000), include_rebalance: this.includeRebalance() } : null;
+  });
 
   protected readonly result = computed(() => this.sim.response()?.[this.selected()] ?? null);
   protected readonly retirementAge = computed(

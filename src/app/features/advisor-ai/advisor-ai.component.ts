@@ -114,7 +114,8 @@ export class AdvisorAiComponent {
           ...m,
           {
             role: 'assistant', text: res.text, toolCalls: res.tool_calls, ordersAdded: res.orders_added,
-            accountId: res.audio?.[0]?.account_id ?? accountId, audio: res.audio?.[0] ?? null,
+            accountId: res.video_jobs?.[0]?.account_id ?? res.audio?.[0]?.account_id ?? accountId,
+            audio: res.audio?.[0] ?? null, videoJob: res.video_jobs?.[0] ?? null,
           },
         ]);
         if (res.orders_added > 0) this.orders.refresh();
