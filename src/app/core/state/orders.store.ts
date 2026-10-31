@@ -3,7 +3,7 @@ import { Observable, tap } from 'rxjs';
 import { Order } from '../models/order';
 import { OrdersService } from '../services/orders.service';
 
-/** Order blotter shared by the Rebalance tab, the Orders tab and the Advisor AI chat. */
+/** Order blotter shared by the Rebalance tab, the Orders tab and the Stochastix AI chat. */
 @Injectable({ providedIn: 'root' })
 export class OrdersStore {
   private readonly api = inject(OrdersService);

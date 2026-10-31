@@ -6,7 +6,7 @@ import { describeTools, parseToolCalls } from './tool-calls';
 import { WebLlmService } from './webllm.service';
 
 const SPEC = {
-  system_prompt: 'You are Advisor AI.',
+  system_prompt: 'You are Stochastix AI.',
   tools: [
     { type: 'function', function: { name: 'simulate_and_rebalance', description: 'Simulate and rebalance.',
       parameters: { properties: { client_name: { type: 'string', description: 'x' } }, required: [] } } },

@@ -9,9 +9,10 @@ Results are projections, not guarantees, and not investment advice.
 
 | Area | What the advisor can do |
 |---|---|
-| Header | Gradient title and caption; client name, account, portfolio value, age, risk profile, model |
-| 📊 Market watch | Widgets on every tab: economic news, upcoming earnings, corporate actions, market heatmap |
-| Sidebar — Advisor360 | Choose source agent, account and model portfolio; load a positions CSV or go back to the default file |
+| Header | Stochastix AI navigation on every page; client name, account, portfolio value, age, risk profile, and model on Quant Models |
+| 📊 MarketWatch | Main page with economic news, upcoming earnings, corporate actions, and market heatmap |
+| 📈 Quant Models | Monte Carlo simulation, portfolio settings, rebalancing, orders, methodology, and Stochastix AI chat |
+| Sidebar — Stochastix AI | Choose source agent, account and model portfolio; load a positions CSV or go back to the default file |
 | Sidebar — Plan assumptions | Retirement age, plan end age, annual contribution, annual withdrawal (reset per account) |
 | Sidebar — Simulation | Trials (1k–50k), seed, sampling (PRNG/LHS/Sobol), copula (Gaussian/Student-t, df 3–30), return distribution |
 | Sidebar — AI model | Ollama, OpenAI, Anthropic or **WebLLM (in browser)**; model; API-key status |
@@ -19,7 +20,7 @@ Results are projections, not guarantees, and not investment advice.
 | ⚖️ Rebalance tab | Drift tolerance, minimum trade, whole shares; trades, allocation after trades, success before/after; Generate orders |
 | 🧾 Orders tab | Blotter with sorting and paging, metrics, Export CSV/JSON, Clear orders; badge with order count |
 | 📖 How it works tab | 30 sample paths chart and methodology panels |
-| 💬 Advisor AI chat | Floating window (normal / maximised / minimised), example questions, markdown answers, tool trace, orders notice, **🔊 Create audio**, **🎬 Create video** |
+| 💬 Stochastix AI chat | Available from MarketWatch and Quant Models; example questions, markdown answers, tool trace, orders notice, **🔊 Create audio**, **🎬 Create video** |
 
 ## Simulation
 - Re-runs automatically when the account, model, plan or settings change: 400 ms debounce, duplicate requests skipped,
@@ -39,7 +40,7 @@ Results are projections, not guarantees, and not investment advice.
 - **Create audio** under each AI answer (not under user or error messages) → in-chat player and **Download** (WAV).
 - The AI can also create audio on request. Numbers are reworded for speech, never changed; disclaimer always included.
 
-## Market watch (Market agents)
+## MarketWatch (Market agents)
 - **📰 Economic news** (MarketAnalyzerAgent): headlines linked to the source, topic chips, publish time.
 - **📈 Upcoming earnings** (EarningsAgent, 14 days): date, symbol, before/after market, EPS estimate.
 - **🏦 Corporate actions** (CorporateActionsAgent, 30 days): dividends (ex-date, pay date, amount) and splits (ratio);
@@ -48,9 +49,9 @@ Results are projections, not guarantees, and not investment advice.
   size = market cap, colour = daily change (red → green, ±3% scale); ★ marks tickers held by clients; 50/100/200
   companies; cap-weighted market change, up/down breadth and sector chips.
 - Green **Held** badge with the accounts holding the ticker; per-widget refresh, "Updated" time, unavailable-source
-  notes; collapsible row.
+  notes; collapsible MarketWatch widgets.
 
-## Advisor AI chat
+## Stochastix AI chat
 - Sends the question with the on-screen account and model; 180 s timeout; "Thinking…" indicator.
 - Answers rendered with ngx-markdown (`$` escaped); expandable "Data used (N tool calls)".
 - Orders created by the AI refresh the Orders badge. New conversation clears memory (`crypto.randomUUID()` thread).

@@ -1,8 +1,8 @@
 @if (open()) {
   <section class="panel" [class.max]="size() === 'max'" [class.min]="size() === 'min'"
-           role="dialog" aria-label="Advisor AI chat" data-testid="chat-panel">
+           role="dialog" aria-label="Stochastix AI chat" data-testid="chat-panel">
     <header class="header">
-      <strong>Advisor AI</strong>
+      <strong>Stochastix AI</strong>
       <span class="spacer"></span>
       <button mat-button type="button" [disabled]="messages().length === 0" (click)="newConversation()">
         New conversation
@@ -56,6 +56,6 @@
 }
 
 <button class="fab" type="button" (click)="toggleOpen()" data-testid="chat-fab"
-        [attr.aria-label]="open() ? 'Close' : 'Open Advisor AI'">
-  {{ open() ? '✕ Close' : '💬 Advisor AI' }}
+        [attr.aria-label]="open() ? 'Close' : 'Open Stochastix AI'">
+  {{ open() ? '✕ Close' : '💬 Stochastix AI' }}
 </button>

@@ -29,7 +29,7 @@ export function signedPct(change: number): string {
   template: `
     <mat-card class="widget" data-testid="widget-heatmap">
       <header>
-        <span class="title">🗺️ Market heatmap <small>(largest US companies, today)</small></span>
+        <span class="title">🗺️ Market Heatmap <small>(largest US companies, today)</small></span>
         @if (feed()?.market_change_pct != null) {
           <span class="summary" data-testid="heatmap-summary" [class.up]="feed()!.market_change_pct! > 0"
                 [class.down]="feed()!.market_change_pct! < 0">

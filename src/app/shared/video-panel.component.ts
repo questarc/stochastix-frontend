@@ -55,7 +55,7 @@ export class VideoPanelComponent {
 
   /** Request to send when the button is clicked (omit to only follow ``initialJob``). */
   readonly request = input<VideoRequest | null>(null);
-  /** Job already started elsewhere, e.g. by the Advisor AI chat. */
+  /** Job already started elsewhere, e.g. by the Stochastix AI chat. */
   readonly initialJob = input<VideoJob | null>(null);
   readonly label = input('Create investor video');
   readonly compact = input(false);
