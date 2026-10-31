@@ -3,7 +3,7 @@ import { MatCardModule } from '@angular/material/card';
 import { WorkspaceStore } from '../../core/state/workspace.store';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
 
-export const APP_TITLE = 'Monte Carlo Simulation Advisor AI';
+export const APP_TITLE = 'Stochastix AI';
 export const APP_CAPTION =
   'An Advisor AI automates the Monte Carlo simulation process, rebalancing, and order generation.';
 

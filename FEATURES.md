@@ -1,6 +1,6 @@
-# Monte Carlo Simulation Advisor AI — Features (front end)
+# Stochastix AI — Features (front end)
 
-Angular front end for **Monte Carlo Simulation Advisor AI**. It does no calculations: every number comes from the
+Angular front end for **Stochastix AI**. It does no calculations: every number comes from the
 FastAPI back end (separate repository).
 
 Results are projections, not guarantees, and not investment advice.
@@ -11,7 +11,7 @@ Results are projections, not guarantees, and not investment advice.
 |---|---|
 | Header | Gradient title and caption; client name, account, portfolio value, age, risk profile, model |
 | 📊 Market watch | Widgets on every tab: economic news, upcoming earnings, corporate actions, market heatmap |
-| Sidebar — Advisor360 | Choose source agent, account and model portfolio; upload an A360 Positions CSV or go back to the default file |
+| Sidebar — Advisor360 | Choose source agent, account and model portfolio; load a positions CSV or go back to the default file |
 | Sidebar — Plan assumptions | Retirement age, plan end age, annual contribution, annual withdrawal (reset per account) |
 | Sidebar — Simulation | Trials (1k–50k), seed, sampling (PRNG/LHS/Sobol), copula (Gaussian/Student-t, df 3–30), return distribution |
 | Sidebar — AI model | Ollama, OpenAI, Anthropic or **WebLLM (in browser)**; model; API-key status |

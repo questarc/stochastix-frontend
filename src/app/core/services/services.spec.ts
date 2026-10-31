@@ -52,15 +52,15 @@ describe('API services', () => {
     expectCall('GET', `${API}/config/options`);
   });
 
-  it('SourcesService uploads and resets A360 positions', () => {
+  it('SourcesService uploads and resets positions', () => {
     const s = TestBed.inject(SourcesService);
     const file = new File(['Qty'], 'positions.csv', { type: 'text/csv' });
-    s.uploadPositions('a360_positions', 'A2001', file).subscribe();
-    const url = `${API}/sources/a360_positions/accounts/A2001/positions/upload`;
+    s.uploadPositions('positions', 'A2001', file).subscribe();
+    const url = `${API}/sources/positions/accounts/A2001/positions/upload`;
     const req = expectCall('POST', url, undefined, []);
     expect(req.request.body instanceof FormData).toBe(true);
     expect((req.request.body as FormData).get('file')).toBeTruthy();
-    s.resetPositions('a360_positions', 'A2001').subscribe();
+    s.resetPositions('positions', 'A2001').subscribe();
     expectCall('DELETE', url);
   });
 

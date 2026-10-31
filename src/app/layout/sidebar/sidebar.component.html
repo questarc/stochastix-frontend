@@ -22,7 +22,7 @@
     <div class="upload">
       <input #fileInput type="file" accept=".csv" hidden (change)="onFile($event)" />
       <button mat-stroked-button type="button" [disabled]="uploading() || !store.accountId()" (click)="fileInput.click()">
-        <mat-icon>upload_file</mat-icon> Upload A360 Positions file
+        <mat-icon>upload_file</mat-icon> Load Positions
       </button>
       @if (store.hasUpload()) {
         <button mat-button type="button" (click)="useDefaultPositions()">Use default positions file</button>
