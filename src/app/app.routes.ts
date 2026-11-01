@@ -25,5 +25,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/fidelity-agent/fidelity-agent.component').then((m) => m.FidelityAgentComponent),
   },
+  {
+    path: 'time-series-agent',
+    title: 'Time Series & Statistical Models | Stochastix AI',
+    loadComponent: () =>
+      import('./features/time-series-agent/time-series-agent.component').then((m) => m.TimeSeriesAgentComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

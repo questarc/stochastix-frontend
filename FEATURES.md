@@ -14,6 +14,7 @@ Results are projections, not guarantees, and not investment advice.
 | 📈 Quant Models | Monte Carlo simulation, portfolio settings, rebalancing, orders, methodology, and Stochastix AI chat |
 | 📄 E*TRADE Agent | Upload text-based PDFs; transfer-activity documents show parsed cash movement totals and rows |
 | 📄 Fidelity Agent | Fidelity PDF analytics and positions CSV import with view-only holdings metrics |
+| 📉 Time Series | Upload date-aligned historical CSV data; fit linear forward-return and logistic up-probability regressions |
 | Sidebar — Stochastix AI | Choose source agent, account and model portfolio; load a positions CSV or go back to the default file |
 | Sidebar — Plan assumptions | Retirement age, plan end age, annual contribution, annual withdrawal (reset per account) |
 | Sidebar — Simulation | Trials (1k–50k), seed, sampling (PRNG/LHS/Sobol), copula (Gaussian/Student-t, df 3–30), return distribution |
@@ -77,6 +78,19 @@ Results are projections, not guarantees, and not investment advice.
   The positions view calculates available portfolio value, cost-basis, daily and total gain/loss summaries, and
   estimated return percentages, with allocation and gain/loss charts. These aggregates are based only on values
   present in the CSV and are not time-weighted investment returns.
+
+## Time Series & Statistical Models
+- Upload a wide CSV (up to 20 MB) containing a date/timestamp, a positive asset-price column, and numeric predictors.
+- Download `public/time-series-sample.csv` from the agent as a 120-row synthetic monthly example (2016–2025) for
+  testing both regression types; it is not historical market data. The agent loads this sample automatically when
+  opened, while retaining the download and upload controls.
+- Linear regression estimates forward simple returns; logistic regression estimates the probability of a positive
+  forward return. Choose the prediction horizon in observations and choose the predictor columns explicitly.
+- Data is sorted chronologically, incomplete rows are dropped, predictors are standardized on the training period,
+  and the final 20% of complete observations are held out for testing. Results include test metrics, coefficients,
+  and actual/predicted charts.
+- CSV contents are processed in memory and not retained. The model estimates statistical associations, not causal
+  effects or investment advice; the holdout is not a validated trading strategy.
 
 ## Stochastix AI chat
 - Sends the question with the on-screen account and model; 180 s timeout; "Thinking…" indicator.

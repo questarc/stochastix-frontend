@@ -31,6 +31,9 @@ import { APP_TITLE } from './layout/header/header.component';
         <a mat-button routerLink="/fidelity-agent" routerLinkActive="active" ariaCurrentWhenActive="page">
           Fidelity Agent
         </a>
+        <a mat-button routerLink="/time-series-agent" routerLinkActive="active" ariaCurrentWhenActive="page">
+          Time Series
+        </a>
       </nav>
     </mat-toolbar>
     <main>

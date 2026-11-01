@@ -15,6 +15,7 @@ import { VideoInfo } from '../models/video';
 import { VideoService } from './video.service';
 import { EtradeService } from './etrade.service';
 import { FidelityService } from './fidelity.service';
+import { TimeSeriesService } from './time-series.service';
 
 const API = environment.apiBaseUrl;
 const SIM = { account_id: 'A1001', trials: 10000, seed: 42, sampling: 'prng', copula: 'gaussian', copula_df: 5 } as const;
@@ -123,6 +124,49 @@ describe('API services', () => {
     service.clearPositionsCsv().subscribe();
     const clearCsvReq = expectCall('DELETE', `${API}/fidelity/positions`, undefined, { cleared: true });
     expect(clearCsvReq.request.headers.get('X-Statement-Session')).toBe(sessionId);
+  });
+
+  it('TimeSeriesService previews CSV metadata and submits model settings with the file', () => {
+    const service = TestBed.inject(TimeSeriesService);
+    service.sampleCsv().subscribe((file) => expect(file.name).toBe('time-series-sample.csv'));
+    const sampleReq = http.expectOne('/time-series-sample.csv');
+    expect(sampleReq.request.method).toBe('GET');
+    sampleReq.flush(new Blob(['Date,Asset,Macro'], { type: 'text/csv' }));
+
+    const file = new File(['Date,Asset,Macro'], 'history.csv', { type: 'text/csv' });
+    service.preview(file).subscribe();
+    const preview = expectCall('POST', `${API}/time-series/preview`, undefined, {
+      columns: ['Date', 'Asset', 'Macro'],
+      date_columns: ['Date'],
+      numeric_columns: ['Asset', 'Macro'],
+      row_count: 100,
+    });
+    expect((preview.request.body as FormData).get('file')).toBeTruthy();
+
+    service.analyze(file, {
+      dateColumn: 'Date',
+      targetColumn: 'Asset',
+      predictorColumns: ['Macro'],
+      horizonPeriods: 5,
+      modelType: 'logistic',
+    }).subscribe();
+    const request = expectCall('POST', `${API}/time-series/analyze`, undefined, {
+      model_type: 'logistic',
+      target_description: 'probability of a positive 5-observation forward return',
+      observations: 99,
+      training_observations: 79,
+      test_observations: 20,
+      metrics: {},
+      coefficients: [],
+      test_series: [],
+    });
+    const body = request.request.body as FormData;
+    expect(body.get('file')).toBeTruthy();
+    expect(body.get('date_column')).toBe('Date');
+    expect(body.get('target_column')).toBe('Asset');
+    expect(body.getAll('predictor_columns')).toEqual(['Macro']);
+    expect(body.get('horizon_periods')).toBe('5');
+    expect(body.get('model_type')).toBe('logistic');
   });
 
   it('SimulationService posts the request', () => {
