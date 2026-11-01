@@ -19,5 +19,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/etrade-agent/etrade-agent.component').then((m) => m.EtradeAgentComponent),
   },
+  {
+    path: 'fidelity-agent',
+    title: 'Fidelity Agent | Stochastix AI',
+    loadComponent: () =>
+      import('./features/fidelity-agent/fidelity-agent.component').then((m) => m.FidelityAgentComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

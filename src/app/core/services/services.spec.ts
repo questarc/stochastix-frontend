@@ -14,6 +14,7 @@ import { AudioInfo } from '../models/chat';
 import { VideoInfo } from '../models/video';
 import { VideoService } from './video.service';
 import { EtradeService } from './etrade.service';
+import { FidelityService } from './fidelity.service';
 
 const API = environment.apiBaseUrl;
 const SIM = { account_id: 'A1001', trials: 10000, seed: 42, sampling: 'prng', copula: 'gaussian', copula_df: 5 } as const;
@@ -85,6 +86,28 @@ describe('API services', () => {
 
     service.clearStatement().subscribe();
     const deleteReq = expectCall('DELETE', `${API}/etrade/statement`, undefined, { cleared: true });
+    expect(deleteReq.request.headers.get('X-Statement-Session')).toBe(sessionId);
+  });
+
+  it('FidelityService uses its separate statement endpoints and session key', () => {
+    const service = TestBed.inject(FidelityService);
+    service.getStatement().subscribe();
+    const getReq = expectCall('GET', `${API}/fidelity/statement`, undefined, null);
+    const sessionId = getReq.request.headers.get('X-Statement-Session');
+    expect(sessionId?.length).toBe(36);
+
+    const file = new File(['%PDF-test'], 'fidelity.pdf', { type: 'application/pdf' });
+    service.uploadStatement(file).subscribe();
+    const uploadReq = expectCall('POST', `${API}/fidelity/statement/upload`, undefined, {
+      filename: 'Fidelity statement', page_count: 1, text: '', character_count: 0,
+      imported_at: '2026-10-31T12:00:00+00:00',
+      document_type: 'statement_text', transactions: [], summary: null,
+    });
+    expect(uploadReq.request.headers.get('X-Statement-Session')).toBe(sessionId);
+    expect((uploadReq.request.body as FormData).get('file')).toBeTruthy();
+
+    service.clearStatement().subscribe();
+    const deleteReq = expectCall('DELETE', `${API}/fidelity/statement`, undefined, { cleared: true });
     expect(deleteReq.request.headers.get('X-Statement-Session')).toBe(sessionId);
   });
 

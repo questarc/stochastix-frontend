@@ -13,6 +13,7 @@ Results are projections, not guarantees, and not investment advice.
 | 📊 MarketWatch | Main page with economic news, upcoming earnings, corporate actions, and market heatmap |
 | 📈 Quant Models | Monte Carlo simulation, portfolio settings, rebalancing, orders, methodology, and Stochastix AI chat |
 | 📄 E*TRADE Agent | Upload text-based PDFs; transfer-activity documents show parsed cash movement totals and rows |
+| 📄 Fidelity Agent | Fidelity-branded PDF import, view-only portfolio and account summary analytics, and the same privacy notice |
 | Sidebar — Stochastix AI | Choose source agent, account and model portfolio; load a positions CSV or go back to the default file |
 | Sidebar — Plan assumptions | Retirement age, plan end age, annual contribution, annual withdrawal (reset per account) |
 | Sidebar — Simulation | Trials (1k–50k), seed, sampling (PRNG/LHS/Sobol), copula (Gaussian/Student-t, df 3–30), return distribution |
@@ -56,8 +57,9 @@ Results are projections, not guarantees, and not investment advice.
 - Load one text-based PDF statement (20 MB / 500-page limit); transfer activity shows parsed cash movement totals and
   rows in the E*TRADE Agent tab.
 - The original PDF and unredacted text are processed temporarily in memory and never written to disk/database.
-- Only allowlisted transfer dates, statuses, and amounts are retained in backend memory per browser session until
-  cleared or restart. Names, SSNs, passwords, addresses, account labels, and the original filename are not retained.
+- Only allowlisted transfer dates, statuses, and amounts—or sanitized section/column labels for unrecognized formats—
+  are retained in backend memory per browser session until cleared or restart. Names, SSNs, passwords, addresses,
+  account labels, and the original filename are not retained.
 - This session key is not authentication. The app has no sign-in, so use only in a trusted environment.
 - Analytics are view-only; no brokerage actions are submitted. Transfer activity is not a holdings statement and does
   not establish portfolio value or investment performance.
@@ -65,6 +67,13 @@ Results are projections, not guarantees, and not investment advice.
   guarantee every sensitive value in an uploaded document is identified.
 - Password-protected and scanned/image-only PDFs are not supported. This initial reader does not yet extract holdings,
   calculate portfolio analytics, or answer questions about the statement.
+- Fidelity Agent uses the same reader and keeps its statement separate from E*TRADE data. When the first-page
+  overview labels and amount sequence are unambiguous, it displays portfolio value, period change, and total including
+  other holdings. It also displays Portfolio Summary income and aggregate Top Holdings totals, plus account-level
+  balance, activity, income, and aggregate Top Holdings figures when recognized. It displays numeric holdings rows
+  without security names or ticker symbols, and recognized Activity transaction rows with requested security details
+  and numeric columns. Personal and account identifiers are not retained. It does not infer investment returns or
+  allocation.
 
 ## Stochastix AI chat
 - Sends the question with the on-screen account and model; 180 s timeout; "Thinking…" indicator.
@@ -87,12 +96,12 @@ Results are projections, not guarantees, and not investment advice.
 ```
 src/app/
   core/models        account, simulation, rebalance, order, chat, llm, video, market, etrade
-  core/services      api, sources, simulation, rebalance, orders, chat, llm, methodology, voice, video, market, etrade
+  core/services      api, sources, simulation, rebalance, orders, chat, llm, methodology, voice, video, market, etrade, fidelity
   core/state         workspace.store, simulation.store, orders.store (signals)
   core/webllm        WebLLM engine, worker, browser agent, tool-call parsing
   core/interceptors  error.interceptor
   layout             header, sidebar
-  features           simulation, rebalance, orders, methodology, advisor-ai, market, etrade-agent
+  features           simulation, rebalance, orders, methodology, advisor-ai, market, broker-statement, etrade-agent, fidelity-agent
   shared             plotly-chart, video-panel, confirm-dialog, pipes
 ```
 

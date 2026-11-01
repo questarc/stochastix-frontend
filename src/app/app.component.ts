@@ -28,6 +28,9 @@ import { APP_TITLE } from './layout/header/header.component';
         <a mat-button routerLink="/etrade-agent" routerLinkActive="active" ariaCurrentWhenActive="page">
           E*TRADE Agent
         </a>
+        <a mat-button routerLink="/fidelity-agent" routerLinkActive="active" ariaCurrentWhenActive="page">
+          Fidelity Agent
+        </a>
       </nav>
     </mat-toolbar>
     <main>
