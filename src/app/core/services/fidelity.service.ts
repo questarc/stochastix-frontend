@@ -2,7 +2,7 @@ import { HttpContext, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SKIP_ERROR_SNACKBAR } from '../interceptors/error.interceptor';
-import { EtradeStatement } from '../models/etrade';
+import { EtradeStatement, FidelityCsvPosition } from '../models/etrade';
 import { ApiService } from './api.service';
 
 const SESSION_STORAGE_KEY = 'stochastix-fidelity-statement-session';
@@ -25,6 +25,18 @@ export class FidelityService {
 
   clearStatement(): Observable<{ cleared: boolean }> {
     return this.api.delete<{ cleared: boolean }>('/fidelity/statement', this.context, this.headers);
+  }
+
+  getPositionsCsv(): Observable<FidelityCsvPosition[] | null> {
+    return this.api.get<FidelityCsvPosition[] | null>('/fidelity/positions', undefined, this.context, this.headers);
+  }
+
+  uploadPositionsCsv(file: File): Observable<FidelityCsvPosition[]> {
+    return this.api.postFile<FidelityCsvPosition[]>('/fidelity/positions/upload', file, this.context, this.headers);
+  }
+
+  clearPositionsCsv(): Observable<{ cleared: boolean }> {
+    return this.api.delete<{ cleared: boolean }>('/fidelity/positions', this.context, this.headers);
   }
 
   private getOrCreateSessionId(): string {

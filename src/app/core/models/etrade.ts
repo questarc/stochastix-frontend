@@ -77,3 +77,20 @@ export interface FidelityActivityTransaction {
   transaction_cost: number | null;
   amount: number | null;
 }
+
+export interface FidelityCsvPosition {
+  symbol: string;
+  description: string;
+  quantity: number | null;
+  last_price: number | null;
+  last_price_change: number | null;
+  current_value: number | null;
+  todays_gain_loss_dollar: number | null;
+  todays_gain_loss_percent: number | null;
+  total_gain_loss_dollar: number | null;
+  total_gain_loss_percent: number | null;
+  percent_of_account: number | null;
+  cost_basis_total: number | null;
+  average_cost_basis: number | null;
+  type: string | null;
+}

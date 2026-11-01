@@ -13,7 +13,7 @@ Results are projections, not guarantees, and not investment advice.
 | 📊 MarketWatch | Main page with economic news, upcoming earnings, corporate actions, and market heatmap |
 | 📈 Quant Models | Monte Carlo simulation, portfolio settings, rebalancing, orders, methodology, and Stochastix AI chat |
 | 📄 E*TRADE Agent | Upload text-based PDFs; transfer-activity documents show parsed cash movement totals and rows |
-| 📄 Fidelity Agent | Fidelity-branded PDF import, view-only portfolio and account summary analytics, and the same privacy notice |
+| 📄 Fidelity Agent | Fidelity PDF analytics and positions CSV import with view-only holdings metrics |
 | Sidebar — Stochastix AI | Choose source agent, account and model portfolio; load a positions CSV or go back to the default file |
 | Sidebar — Plan assumptions | Retirement age, plan end age, annual contribution, annual withdrawal (reset per account) |
 | Sidebar — Simulation | Trials (1k–50k), seed, sampling (PRNG/LHS/Sobol), copula (Gaussian/Student-t, df 3–30), return distribution |
@@ -72,8 +72,11 @@ Results are projections, not guarantees, and not investment advice.
   other holdings. It also displays Portfolio Summary income and aggregate Top Holdings totals, plus account-level
   balance, activity, income, and aggregate Top Holdings figures when recognized. It displays numeric holdings rows
   without security names or ticker symbols, and recognized Activity transaction rows with requested security details
-  and numeric columns. Personal and account identifiers are not retained. It does not infer investment returns or
-  allocation.
+  and numeric columns. Its positions CSV loader displays the supplied position, price, gain/loss, and cost-basis
+  columns, while excluding account names and numbers. Personal and account identifiers are not retained.
+  The positions view calculates available portfolio value, cost-basis, daily and total gain/loss summaries, and
+  estimated return percentages, with allocation and gain/loss charts. These aggregates are based only on values
+  present in the CSV and are not time-weighted investment returns.
 
 ## Stochastix AI chat
 - Sends the question with the on-screen account and model; 180 s timeout; "Thinking…" indicator.

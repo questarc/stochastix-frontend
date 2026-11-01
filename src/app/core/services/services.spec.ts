@@ -109,6 +109,20 @@ describe('API services', () => {
     service.clearStatement().subscribe();
     const deleteReq = expectCall('DELETE', `${API}/fidelity/statement`, undefined, { cleared: true });
     expect(deleteReq.request.headers.get('X-Statement-Session')).toBe(sessionId);
+
+    service.getPositionsCsv().subscribe();
+    const positionsReq = expectCall('GET', `${API}/fidelity/positions`, undefined, null);
+    expect(positionsReq.request.headers.get('X-Statement-Session')).toBe(sessionId);
+
+    const csv = new File(['Symbol,Description'], 'positions.csv', { type: 'text/csv' });
+    service.uploadPositionsCsv(csv).subscribe();
+    const csvReq = expectCall('POST', `${API}/fidelity/positions/upload`, undefined, []);
+    expect(csvReq.request.headers.get('X-Statement-Session')).toBe(sessionId);
+    expect((csvReq.request.body as FormData).get('file')).toBeTruthy();
+
+    service.clearPositionsCsv().subscribe();
+    const clearCsvReq = expectCall('DELETE', `${API}/fidelity/positions`, undefined, { cleared: true });
+    expect(clearCsvReq.request.headers.get('X-Statement-Session')).toBe(sessionId);
   });
 
   it('SimulationService posts the request', () => {

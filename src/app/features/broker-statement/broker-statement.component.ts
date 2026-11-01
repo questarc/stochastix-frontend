@@ -1,23 +1,39 @@
-import { ChangeDetectionStrategy, Component, OnInit, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, input, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Observable } from 'rxjs';
 import { errorDetail } from '../../core/interceptors/error.interceptor';
-import { EtradeStatement } from '../../core/models/etrade';
+import { EtradeStatement, FidelityCsvPosition } from '../../core/models/etrade';
+import { PlotlyChartComponent } from '../../shared/plotly-chart.component';
 
 const MAX_PDF_BYTES = 20 * 1024 * 1024;
+const MAX_CSV_BYTES = 20 * 1024 * 1024;
+
+interface FidelityPositionAnalytics {
+  totalValue: number;
+  totalCostBasis: number | null;
+  todaysGainLoss: number | null;
+  todaysGainLossPercent: number | null;
+  totalGainLoss: number | null;
+  totalGainLossPercent: number | null;
+  allocationChart: unknown[];
+  gainLossChart: unknown[];
+}
 
 export interface BrokerStatementApi {
   getStatement(): Observable<EtradeStatement | null>;
   uploadStatement(file: File): Observable<EtradeStatement>;
   clearStatement(): Observable<{ cleared: boolean }>;
+  getPositionsCsv?(): Observable<FidelityCsvPosition[] | null>;
+  uploadPositionsCsv?(file: File): Observable<FidelityCsvPosition[]>;
+  clearPositionsCsv?(): Observable<{ cleared: boolean }>;
 }
 
 @Component({
   selector: 'app-broker-statement',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, MatButtonModule, MatIconModule],
+  imports: [DatePipe, MatButtonModule, MatIconModule, PlotlyChartComponent],
   template: `
     <header class="page-heading">
       <p class="eyebrow">BROKERAGE STATEMENTS</p>
@@ -47,10 +63,18 @@ export interface BrokerStatementApi {
         <div class="actions">
           <input #pdfInput type="file" accept="application/pdf,.pdf" hidden
                  [attr.aria-label]="'Choose a ' + brokerName() + ' statement PDF'" (change)="onFile($event)" />
+          <input #csvInput type="file" accept=".csv,text/csv" hidden
+                 aria-label="Choose a Fidelity positions CSV" (change)="onPositionsCsvFile($event)" />
           <button mat-flat-button type="button" [disabled]="loading()" (click)="pdfInput.click()">
             <mat-icon>upload_file</mat-icon>
             {{ loading() ? 'Reading PDF…' : 'Load statement PDF' }}
           </button>
+          @if (api().uploadPositionsCsv) {
+            <button mat-stroked-button type="button" [disabled]="positionsLoading()" (click)="csvInput.click()">
+              <mat-icon>table_view</mat-icon>
+              {{ positionsLoading() ? 'Reading CSV…' : 'Load positions CSV' }}
+            </button>
+          }
           @if (statement()) {
             <button mat-stroked-button type="button" [disabled]="loading()" (click)="clearStatement()">
               Clear statement
@@ -59,7 +83,10 @@ export interface BrokerStatementApi {
         </div>
       </div>
 
-      <p class="hint">PDF only · Maximum 20 MB · Password-protected and scanned PDFs are not supported</p>
+      <p class="hint">
+        PDF only · Maximum 20 MB · Password-protected and scanned PDFs are not supported
+        @if (api().uploadPositionsCsv) { · Fidelity positions CSV also supported · Maximum 20 MB }
+      </p>
       @if (error()) {
         <p class="error" role="alert">{{ error() }}</p>
       }
@@ -308,6 +335,135 @@ export interface BrokerStatementApi {
           <p>No statement loaded. Choose a PDF to extract its searchable text.</p>
         </div>
       }
+      @if (positionsCsv(); as positions) {
+        <section class="analytics" aria-labelledby="fidelity-csv-positions-heading">
+          <div class="reader-heading">
+            <div>
+              <h3 id="fidelity-csv-positions-heading">Fidelity positions CSV ({{ positions.length }})</h3>
+              <p class="notice">
+                Account numbers and account names are excluded. Rows without a symbol, including pending activity,
+                are omitted.
+              </p>
+            </div>
+            @if (api().clearPositionsCsv) {
+              <button mat-stroked-button type="button" [disabled]="positionsLoading()" (click)="clearPositionsCsv()">
+                Clear positions CSV
+              </button>
+            }
+          </div>
+          @if (positionAnalytics(); as analytics) {
+            <section class="portfolio-analytics" aria-labelledby="positions-analytics-heading">
+              <h4 id="positions-analytics-heading">Portfolio analytics</h4>
+              <p class="notice">
+                Totals are calculated from available CSV values; missing fields are excluded. Return percentages are
+                aggregate gain/loss divided by the corresponding available cost basis or estimated starting value.
+                These are not time-weighted investment returns.
+              </p>
+              <div class="metrics">
+                <article class="metric">
+                  <span>Total market value</span>
+                  <strong>{{ currency(analytics.totalValue) }}</strong>
+                </article>
+                <article class="metric">
+                  <span>Positions</span>
+                  <strong>{{ positions.length }}</strong>
+                </article>
+                @if (analytics.totalCostBasis !== null) {
+                  <article class="metric">
+                    <span>Available cost basis</span>
+                    <strong>{{ currency(analytics.totalCostBasis) }}</strong>
+                  </article>
+                }
+                @if (analytics.todaysGainLoss !== null) {
+                  <article class="metric" [class.negative]="analytics.todaysGainLoss < 0">
+                    <span>Today's gain/loss</span>
+                    <strong>{{ currency(analytics.todaysGainLoss) }}</strong>
+                    @if (analytics.todaysGainLossPercent !== null) {
+                      <small>{{ number(analytics.todaysGainLossPercent, 2) }}% estimated</small>
+                    }
+                  </article>
+                }
+                @if (analytics.totalGainLoss !== null) {
+                  <article class="metric" [class.negative]="analytics.totalGainLoss < 0">
+                    <span>Total gain/loss</span>
+                    <strong>{{ currency(analytics.totalGainLoss) }}</strong>
+                    @if (analytics.totalGainLossPercent !== null) {
+                      <small>{{ number(analytics.totalGainLossPercent, 2) }}% on available basis</small>
+                    }
+                  </article>
+                }
+              </div>
+              <div class="chart-grid">
+                <article class="chart-panel">
+                  <h5>Portfolio allocation</h5>
+                  <p class="notice">Current market value by holding; smaller holdings are grouped as Other.</p>
+                  <app-plotly-chart
+                    [data]="analytics.allocationChart"
+                    [layout]="allocationLayout"
+                    [height]="320"
+                    ariaLabel="Portfolio allocation by holding"
+                  />
+                </article>
+                @if (analytics.gainLossChart.length) {
+                  <article class="chart-panel">
+                    <h5>Total gain/loss by holding</h5>
+                    <p class="notice">Largest absolute reported gain/loss values.</p>
+                    <app-plotly-chart
+                      [data]="analytics.gainLossChart"
+                      [layout]="gainLossLayout"
+                      [height]="320"
+                      ariaLabel="Total gain or loss by holding"
+                    />
+                  </article>
+                }
+              </div>
+            </section>
+          }
+          <div class="table-wrap">
+            <table>
+              <caption>Fidelity positions imported from CSV</caption>
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Description</th>
+                  <th class="amount">Quantity</th>
+                  <th class="amount">Last price</th>
+                  <th class="amount">Last price change</th>
+                  <th class="amount">Current value</th>
+                  <th class="amount">Today gain/loss ($)</th>
+                  <th class="amount">Today gain/loss (%)</th>
+                  <th class="amount">Total gain/loss ($)</th>
+                  <th class="amount">Total gain/loss (%)</th>
+                  <th class="amount">Percent of account</th>
+                  <th class="amount">Cost basis total</th>
+                  <th class="amount">Average cost basis</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (position of positions; track $index) {
+                  <tr>
+                    <td>{{ position.symbol }}</td>
+                    <td>{{ position.description }}</td>
+                    <td class="amount">{{ position.quantity == null ? '—' : number(position.quantity, 4) }}</td>
+                    <td class="amount">{{ position.last_price == null ? '—' : currency(position.last_price, 4) }}</td>
+                    <td class="amount">{{ position.last_price_change == null ? '—' : currency(position.last_price_change, 4) }}</td>
+                    <td class="amount">{{ position.current_value == null ? '—' : currency(position.current_value) }}</td>
+                    <td class="amount">{{ position.todays_gain_loss_dollar == null ? '—' : currency(position.todays_gain_loss_dollar) }}</td>
+                    <td class="amount">{{ position.todays_gain_loss_percent == null ? '—' : number(position.todays_gain_loss_percent, 2) + '%' }}</td>
+                    <td class="amount">{{ position.total_gain_loss_dollar == null ? '—' : currency(position.total_gain_loss_dollar) }}</td>
+                    <td class="amount">{{ position.total_gain_loss_percent == null ? '—' : number(position.total_gain_loss_percent, 2) + '%' }}</td>
+                    <td class="amount">{{ position.percent_of_account == null ? '—' : number(position.percent_of_account, 2) + '%' }}</td>
+                    <td class="amount">{{ position.cost_basis_total == null ? '—' : currency(position.cost_basis_total) }}</td>
+                    <td class="amount">{{ position.average_cost_basis == null ? '—' : currency(position.average_cost_basis, 4) }}</td>
+                    <td>{{ position.type ?? '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
     </section>
   `,
   styles: `
@@ -331,11 +487,18 @@ export interface BrokerStatementApi {
     .document-meta strong { color: var(--app-text); }
     .analytics { margin: 1.5rem 0; }
     .analytics h3 { margin: 0 0 0.4rem; }
+    .portfolio-analytics { margin: 1rem 0 1.5rem; padding: 1rem; border: 1px solid var(--app-border); border-radius: 10px; background: var(--app-panel); }
+    .portfolio-analytics h4 { margin: 0; font-size: 1.05rem; }
+    .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 1rem; }
+    .chart-panel { min-width: 0; padding: 0.75rem; border: 1px solid var(--app-border); border-radius: 8px; background: var(--app-panel-solid); }
+    .chart-panel h5 { margin: 0; font-size: 0.95rem; }
     .notice { color: var(--app-muted); font-size: 0.9rem; }
     .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
     .metric { display: flex; flex-direction: column; gap: 0.4rem; padding: 1rem; border: 1px solid var(--app-border); border-radius: 8px; background: var(--app-panel); }
     .metric span { color: var(--app-muted); font-size: 0.82rem; }
     .metric strong { font-size: 1.25rem; }
+    .metric small { color: var(--app-muted); }
+    .metric.negative strong { color: #fca5a5; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
     caption { padding: 0.5rem 0; text-align: left; font-weight: 600; }
@@ -357,13 +520,154 @@ export class BrokerStatementComponent implements OnInit {
   readonly api = input.required<BrokerStatementApi>();
   protected readonly statement = signal<EtradeStatement | null>(null);
   protected readonly loading = signal(false);
+  protected readonly positionsLoading = signal(false);
+  protected readonly positionsCsv = signal<FidelityCsvPosition[] | null>(null);
   protected readonly error = signal('');
+  protected readonly allocationLayout = {
+    margin: { l: 10, r: 10, t: 10, b: 35 },
+    legend: { orientation: 'h', y: -0.15 },
+  };
+  protected readonly gainLossLayout = {
+    margin: { l: 100, r: 20, t: 10, b: 40 },
+    xaxis: { title: { text: 'Gain/loss ($)' }, zeroline: true },
+    yaxis: { automargin: true },
+  };
+  protected readonly positionAnalytics = computed<FidelityPositionAnalytics | null>(() => {
+    const positions = this.positionsCsv();
+    if (!positions?.length) return null;
+
+    const sumAvailable = (selector: (position: FidelityCsvPosition) => number | null): number | null => {
+      const values = positions
+        .map(selector)
+        .filter((value): value is number => value !== null && Number.isFinite(value));
+      return values.length ? values.reduce((total, value) => total + value, 0) : null;
+    };
+
+    const totalValue = sumAvailable((position) => position.current_value) ?? 0;
+    const totalCostBasis = sumAvailable((position) => position.cost_basis_total);
+    const todaysGainLoss = sumAvailable((position) => position.todays_gain_loss_dollar);
+    const totalGainLoss = sumAvailable((position) => position.total_gain_loss_dollar);
+    const dailyValues = positions.filter(
+      (
+        position,
+      ): position is FidelityCsvPosition & { current_value: number; todays_gain_loss_dollar: number } =>
+        position.current_value !== null &&
+        Number.isFinite(position.current_value) &&
+        position.todays_gain_loss_dollar !== null &&
+        Number.isFinite(position.todays_gain_loss_dollar),
+    );
+    const dailyGainLossForReturn = dailyValues.reduce(
+      (total, position) => total + position.todays_gain_loss_dollar,
+      0,
+    );
+    const estimatedStartingValue = dailyValues.reduce(
+      (total, position) => total + position.current_value - position.todays_gain_loss_dollar,
+      0,
+    );
+    const totalReturnPositions = positions.filter(
+      (
+        position,
+      ): position is FidelityCsvPosition & { total_gain_loss_dollar: number; cost_basis_total: number } =>
+        position.total_gain_loss_dollar !== null &&
+        Number.isFinite(position.total_gain_loss_dollar) &&
+        position.cost_basis_total !== null &&
+        Number.isFinite(position.cost_basis_total),
+    );
+    const gainLossForReturn = totalReturnPositions.reduce(
+      (total, position) => total + position.total_gain_loss_dollar,
+      0,
+    );
+    const costBasisForReturn = totalReturnPositions.reduce(
+      (total, position) => total + position.cost_basis_total,
+      0,
+    );
+    const todaysGainLossPercent =
+      dailyValues.length && estimatedStartingValue > 0
+        ? (dailyGainLossForReturn / estimatedStartingValue) * 100
+        : null;
+    const totalGainLossPercent =
+      totalReturnPositions.length && costBasisForReturn > 0
+        ? (gainLossForReturn / costBasisForReturn) * 100
+        : null;
+
+    const valuedPositions = positions
+      .filter(
+        (position): position is FidelityCsvPosition & { current_value: number } =>
+          position.current_value !== null &&
+          Number.isFinite(position.current_value) &&
+          position.current_value > 0,
+      )
+      .sort((left, right) => right.current_value - left.current_value);
+    const topHoldings = valuedPositions.slice(0, 8);
+    const allocationLabels = topHoldings.map((position) => position.symbol);
+    const allocationValues = topHoldings.map((position) => position.current_value);
+    const otherValue = valuedPositions.slice(8).reduce((total, position) => total + position.current_value, 0);
+    if (otherValue > 0) {
+      allocationLabels.push('Other');
+      allocationValues.push(otherValue);
+    }
+
+    const gainLossPositions = positions
+      .filter(
+        (position): position is FidelityCsvPosition & { total_gain_loss_dollar: number } =>
+          position.total_gain_loss_dollar !== null && Number.isFinite(position.total_gain_loss_dollar),
+      )
+      .sort((left, right) => Math.abs(right.total_gain_loss_dollar) - Math.abs(left.total_gain_loss_dollar))
+      .slice(0, 10);
+
+    return {
+      totalValue,
+      totalCostBasis,
+      todaysGainLoss,
+      todaysGainLossPercent,
+      totalGainLoss,
+      totalGainLossPercent,
+      allocationChart: allocationValues.length
+        ? [
+            {
+              type: 'pie',
+              hole: 0.58,
+              labels: allocationLabels,
+              values: allocationValues,
+              textinfo: 'label+percent',
+              hovertemplate: '%{label}<br>$%{value:,.2f}<extra></extra>',
+              marker: {
+                colors: ['#38bdf8', '#818cf8', '#34d399', '#fbbf24', '#fb7185', '#a78bfa', '#2dd4bf', '#f97316', '#64748b'],
+              },
+            },
+          ]
+        : [],
+      gainLossChart: gainLossPositions.length
+        ? [
+            {
+              type: 'bar',
+              orientation: 'h',
+              y: gainLossPositions.map((position) => position.symbol).reverse(),
+              x: gainLossPositions.map((position) => position.total_gain_loss_dollar).reverse(),
+              marker: {
+                color: gainLossPositions
+                  .map((position) => (position.total_gain_loss_dollar >= 0 ? '#34d399' : '#f87171'))
+                  .reverse(),
+              },
+              hovertemplate: '%{y}<br>$%{x:,.2f}<extra></extra>',
+            },
+          ]
+        : [],
+    };
+  });
 
   ngOnInit(): void {
     this.api().getStatement().subscribe({
       next: (statement) => this.statement.set(statement),
       error: (err: unknown) => this.error.set(errorDetail(err)),
     });
+    const getPositions = this.api().getPositionsCsv;
+    if (getPositions) {
+      getPositions.call(this.api()).subscribe({
+        next: (positions) => this.positionsCsv.set(positions),
+        error: (err: unknown) => this.error.set(errorDetail(err)),
+      });
+    }
   }
 
   protected currency(value: number, maximumFractionDigits = 2): string {
@@ -402,6 +706,53 @@ export class BrokerStatementComponent implements OnInit {
       error: (err: unknown) => {
         this.error.set(errorDetail(err));
         this.loading.set(false);
+      },
+    });
+  }
+
+  protected onPositionsCsvFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    const api = this.api();
+    const upload = api.uploadPositionsCsv;
+    if (!file || !upload) return;
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      this.error.set('Choose a Fidelity positions CSV file.');
+      return;
+    }
+    if (file.size > MAX_CSV_BYTES) {
+      this.error.set('The CSV exceeds the 20 MB upload limit.');
+      return;
+    }
+
+    this.positionsLoading.set(true);
+    this.error.set('');
+    upload.call(api, file).subscribe({
+      next: (positions) => {
+        this.positionsCsv.set(positions);
+        this.positionsLoading.set(false);
+      },
+      error: (err: unknown) => {
+        this.error.set(errorDetail(err));
+        this.positionsLoading.set(false);
+      },
+    });
+  }
+
+  protected clearPositionsCsv(): void {
+    const api = this.api();
+    const clear = api.clearPositionsCsv;
+    if (!clear) return;
+    this.positionsLoading.set(true);
+    clear.call(api).subscribe({
+      next: () => {
+        this.positionsCsv.set(null);
+        this.positionsLoading.set(false);
+      },
+      error: (err: unknown) => {
+        this.error.set(errorDetail(err));
+        this.positionsLoading.set(false);
       },
     });
   }
