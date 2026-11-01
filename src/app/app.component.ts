@@ -25,6 +25,9 @@ import { APP_TITLE } from './layout/header/header.component';
         <a mat-button routerLink="/quant-models" routerLinkActive="active" ariaCurrentWhenActive="page">
           Quant Models
         </a>
+        <a mat-button routerLink="/etrade-agent" routerLinkActive="active" ariaCurrentWhenActive="page">
+          E*TRADE Agent
+        </a>
       </nav>
     </mat-toolbar>
     <main>

@@ -1,4 +1,4 @@
-import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -14,16 +14,22 @@ export class ApiService {
     return `${this.baseUrl}${path}`;
   }
 
-  get<T>(path: string, params?: Params, context?: HttpContext): Observable<T> {
-    return this.http.get<T>(this.url(path), { params: toParams(params), context });
+  get<T>(path: string, params?: Params, context?: HttpContext, headers?: HttpHeaders): Observable<T> {
+    return this.http.get<T>(this.url(path), { params: toParams(params), context, headers });
   }
 
   post<T>(path: string, body: unknown, context?: HttpContext): Observable<T> {
     return this.http.post<T>(this.url(path), body, { context });
   }
 
-  delete<T>(path: string, context?: HttpContext): Observable<T> {
-    return this.http.delete<T>(this.url(path), { context });
+  postFile<T>(path: string, file: File, context?: HttpContext, headers?: HttpHeaders): Observable<T> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.post<T>(this.url(path), body, { context, headers });
+  }
+
+  delete<T>(path: string, context?: HttpContext, headers?: HttpHeaders): Observable<T> {
+    return this.http.delete<T>(this.url(path), { context, headers });
   }
 
   download(path: string, params?: Params): Observable<Blob> {

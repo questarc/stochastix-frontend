@@ -13,5 +13,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/quant-models/quant-models-page.component').then((m) => m.QuantModelsPageComponent),
   },
+  {
+    path: 'etrade-agent',
+    title: 'E*TRADE Agent | Stochastix AI',
+    loadComponent: () =>
+      import('./features/etrade-agent/etrade-agent.component').then((m) => m.EtradeAgentComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

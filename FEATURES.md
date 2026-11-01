@@ -12,6 +12,7 @@ Results are projections, not guarantees, and not investment advice.
 | Header | Stochastix AI navigation on every page; client name, account, portfolio value, age, risk profile, and model on Quant Models |
 | 📊 MarketWatch | Main page with economic news, upcoming earnings, corporate actions, and market heatmap |
 | 📈 Quant Models | Monte Carlo simulation, portfolio settings, rebalancing, orders, methodology, and Stochastix AI chat |
+| 📄 E*TRADE Agent | Upload text-based PDFs; transfer-activity documents show parsed cash movement totals and rows |
 | Sidebar — Stochastix AI | Choose source agent, account and model portfolio; load a positions CSV or go back to the default file |
 | Sidebar — Plan assumptions | Retirement age, plan end age, annual contribution, annual withdrawal (reset per account) |
 | Sidebar — Simulation | Trials (1k–50k), seed, sampling (PRNG/LHS/Sobol), copula (Gaussian/Student-t, df 3–30), return distribution |
@@ -51,6 +52,20 @@ Results are projections, not guarantees, and not investment advice.
 - Green **Held** badge with the accounts holding the ticker; per-widget refresh, "Updated" time, unavailable-source
   notes; collapsible MarketWatch widgets.
 
+## E*TRADE statement reader
+- Load one text-based PDF statement (20 MB / 500-page limit); transfer activity shows parsed cash movement totals and
+  rows in the E*TRADE Agent tab.
+- The original PDF and unredacted text are processed temporarily in memory and never written to disk/database.
+- Only allowlisted transfer dates, statuses, and amounts are retained in backend memory per browser session until
+  cleared or restart. Names, SSNs, passwords, addresses, account labels, and the original filename are not retained.
+- This session key is not authentication. The app has no sign-in, so use only in a trusted environment.
+- Analytics are view-only; no brokerage actions are submitted. Transfer activity is not a holdings statement and does
+  not establish portfolio value or investment performance.
+- The displayed preview is built from allowlisted analytics, not the original text. Automated protection cannot
+  guarantee every sensitive value in an uploaded document is identified.
+- Password-protected and scanned/image-only PDFs are not supported. This initial reader does not yet extract holdings,
+  calculate portfolio analytics, or answer questions about the statement.
+
 ## Stochastix AI chat
 - Sends the question with the on-screen account and model; 180 s timeout; "Thinking…" indicator.
 - Answers rendered with ngx-markdown (`$` escaped); expandable "Data used (N tool calls)".
@@ -71,13 +86,13 @@ Results are projections, not guarantees, and not investment advice.
 ## Structure
 ```
 src/app/
-  core/models        account, simulation, rebalance, order, chat, llm, video, market
-  core/services      api, sources, simulation, rebalance, orders, chat, llm, methodology, voice, video, market
+  core/models        account, simulation, rebalance, order, chat, llm, video, market, etrade
+  core/services      api, sources, simulation, rebalance, orders, chat, llm, methodology, voice, video, market, etrade
   core/state         workspace.store, simulation.store, orders.store (signals)
   core/webllm        WebLLM engine, worker, browser agent, tool-call parsing
   core/interceptors  error.interceptor
   layout             header, sidebar
-  features           simulation, rebalance, orders, methodology, advisor-ai, market
+  features           simulation, rebalance, orders, methodology, advisor-ai, market, etrade-agent
   shared             plotly-chart, video-panel, confirm-dialog, pipes
 ```
 
@@ -94,5 +109,5 @@ With the back end: `docker compose up -d --build` from the parent folder → `ht
 
 ## Known limitations
 - No login; everyone who can reach the app shares the same orders.
-- Orders, uploads, audio and videos live in back-end memory and are lost when it restarts.
+- Orders, uploads, imported E*TRADE statement text, audio and videos live in back-end memory and are lost when it restarts.
 - Market data comes from free public sources; check their terms before production use.

@@ -13,6 +13,7 @@ import { VoiceService } from './voice.service';
 import { AudioInfo } from '../models/chat';
 import { VideoInfo } from '../models/video';
 import { VideoService } from './video.service';
+import { EtradeService } from './etrade.service';
 
 const API = environment.apiBaseUrl;
 const SIM = { account_id: 'A1001', trials: 10000, seed: 42, sampling: 'prng', copula: 'gaussian', copula_df: 5 } as const;
@@ -27,7 +28,7 @@ describe('API services', () => {
 
   afterEach(() => http.verify());
 
-  function expectCall(method: string, url: string, body?: unknown, response: object = {}) {
+  function expectCall(method: string, url: string, body?: unknown, response: object | null = {}) {
     const req = http.expectOne((r) => r.method === method && r.urlWithParams === url);
     if (body !== undefined) expect(req.request.body).toEqual(body);
     req.flush(response);
@@ -62,6 +63,29 @@ describe('API services', () => {
     expect((req.request.body as FormData).get('file')).toBeTruthy();
     s.resetPositions('positions', 'A2001').subscribe();
     expectCall('DELETE', url);
+  });
+
+  it('EtradeService loads, uploads and clears the in-memory statement', () => {
+    const service = TestBed.inject(EtradeService);
+    service.getStatement().subscribe();
+    const getReq = expectCall('GET', `${API}/etrade/statement`, undefined, null);
+    const sessionId = getReq.request.headers.get('X-Statement-Session');
+    expect(sessionId?.length).toBe(36);
+
+    const file = new File(['%PDF-test'], 'statement.pdf', { type: 'application/pdf' });
+    service.uploadStatement(file).subscribe();
+    const req = expectCall('POST', `${API}/etrade/statement/upload`, undefined, {
+      filename: 'statement.pdf', page_count: 1, text: 'Statement', character_count: 9,
+      imported_at: '2026-10-31T12:00:00+00:00',
+      document_type: 'statement_text', transactions: [], summary: null,
+    });
+    expect(req.request.headers.get('X-Statement-Session')).toBe(sessionId);
+    expect(req.request.body instanceof FormData).toBe(true);
+    expect((req.request.body as FormData).get('file')).toBeTruthy();
+
+    service.clearStatement().subscribe();
+    const deleteReq = expectCall('DELETE', `${API}/etrade/statement`, undefined, { cleared: true });
+    expect(deleteReq.request.headers.get('X-Statement-Session')).toBe(sessionId);
   });
 
   it('SimulationService posts the request', () => {
