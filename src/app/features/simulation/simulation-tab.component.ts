@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { VideoRequest } from '../../core/models/video';
 import { SimulationStore } from '../../core/state/simulation.store';
 import { WorkspaceStore } from '../../core/state/workspace.store';
@@ -21,7 +21,7 @@ export const ASSET_CLASSES = ['US Equity', 'Intl Equity', 'US Bonds', 'Cash', 'R
   selector: 'app-simulation-tab',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatProgressBarModule, AllocationChartComponent,
+    MatButtonToggleModule, MatProgressBarModule, MatCardModule, MatCheckboxModule, AllocationChartComponent,
     DepletionHistogramComponent, EndingHistogramComponent, FanChartComponent, PositionsTableComponent,
     RunSettingsComponent, SuccessMetricsComponent, VideoPanelComponent,
   ],
@@ -41,8 +41,7 @@ export const ASSET_CLASSES = ['US Equity', 'Intl Equity', 'US Bonds', 'Cash', 'R
         <div class="video-head">
           <div>
             <h3>🎬 Investor video</h3>
-            <p class="caption">A narrated 90-second walkthrough of this plan, with your animated advisor, the charts
-              and subtitles. Built from these exact results, ready to send to the client.</p>
+            <p class="caption">A narrated walkthrough of this retirement plan, including projections and the selected rebalance option.</p>
           </div>
           <mat-checkbox [checked]="includeRebalance()" (change)="includeRebalance.set($event.checked)">
             Include proposed rebalance
@@ -87,10 +86,11 @@ export class SimulationTabComponent {
   protected readonly assetClasses = ASSET_CLASSES;
   protected readonly includeRebalance = signal(true);
   protected readonly videoRequest = computed<VideoRequest | null>(() => {
-    const req = this.workspace.simulationRequest();
-    return req ? { ...req, trials: Math.min(req.trials, 25_000), include_rebalance: this.includeRebalance() } : null;
+    const request = this.workspace.simulationRequest();
+    return request
+      ? { ...request, trials: Math.min(request.trials, 25_000), include_rebalance: this.includeRebalance() }
+      : null;
   });
-
   protected readonly result = computed(() => this.sim.response()?.[this.selected()] ?? null);
   protected readonly retirementAge = computed(
     () => this.workspace.plan()?.retirement_age ?? this.workspace.account()?.retirement_age ?? 0,

@@ -5,12 +5,16 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { WorkspaceStore } from './core/state/workspace.store';
+import { AdvisorAiComponent } from './features/advisor-ai/advisor-ai.component';
 import { APP_TITLE } from './layout/header/header.component';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, MatIconModule, MatToolbarModule, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [
+    MatButtonModule, MatIconModule, MatToolbarModule, RouterLink, RouterLinkActive, RouterOutlet,
+    AdvisorAiComponent,
+  ],
   template: `
     <mat-toolbar class="toolbar">
       <a class="brand" routerLink="/" aria-label="Stochastix AI home">
@@ -20,10 +24,7 @@ import { APP_TITLE } from './layout/header/header.component';
       <nav aria-label="Main navigation">
         <a mat-button routerLink="/" routerLinkActive="active"
            [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-          MarketWatch
-        </a>
-        <a mat-button routerLink="/quant-models" routerLinkActive="active" ariaCurrentWhenActive="page">
-          Quant Models
+          MarketWatch Agent
         </a>
         <a mat-button routerLink="/etrade-agent" routerLinkActive="active" ariaCurrentWhenActive="page">
           E*TRADE Agent
@@ -32,13 +33,17 @@ import { APP_TITLE } from './layout/header/header.component';
           Fidelity Agent
         </a>
         <a mat-button routerLink="/time-series-agent" routerLinkActive="active" ariaCurrentWhenActive="page">
-          Time Series
+          Time Series Agent
+        </a>
+        <a mat-button routerLink="/technical-indicators" routerLinkActive="active" ariaCurrentWhenActive="page">
+          Technical Indicators Agent
         </a>
       </nav>
     </mat-toolbar>
     <main>
       <router-outlet />
     </main>
+    <app-advisor-ai />
   `,
   styles: `
     :host { display: block; min-height: 100vh; }

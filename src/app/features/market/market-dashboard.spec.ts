@@ -8,7 +8,7 @@ const API = environment.apiBaseUrl;
 const base = { notice: 'n', updated_at: '2026-10-27T21:00:00Z', errors: [] };
 
 describe('MarketDashboardComponent', () => {
-  it('places the heatmap above MarketWatch and exposes the Stochastix AI chat', async () => {
+  it('places the heatmap above MarketWatch', async () => {
     TestBed.configureTestingModule({
       imports: [MarketDashboardComponent],
       providers: [provideHttpClient(), provideHttpClientTesting()],
@@ -30,8 +30,6 @@ describe('MarketDashboardComponent', () => {
     const heatmap = el.querySelector('[data-testid="widget-heatmap"]')!;
     const marketWatch = el.querySelector('.page-heading')!;
     expect(heatmap.compareDocumentPosition(marketWatch) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(el.querySelector('[data-testid="chat-fab"]')?.textContent).toContain('Stochastix AI');
-    expect(el.querySelector('[data-testid="chat-fab"]')?.getAttribute('aria-label')).toBe('Open Stochastix AI');
     http.verify();
   });
 });

@@ -86,7 +86,7 @@ export class VideoPanelComponent {
     const req = this.request();
     if (!req) return;
     this.error.set(null);
-    this.job.set({ job_id: '', account_id: req.account_id, status: 'queued', progress: 0, message: 'Starting…', video: null });
+    this.job.set({ job_id: '', account_id: req.account_id ?? null, status: 'queued', progress: 0, message: 'Starting…', video: null });
     this.sub?.unsubscribe();
     this.sub = this.video.create(req).subscribe({ next: (j) => this.update(j), error: (e) => this.fail(e) });
   }

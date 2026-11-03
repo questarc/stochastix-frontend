@@ -1,7 +1,7 @@
 # Stochastix AI — Features (front end)
 
-Angular front end for **Stochastix AI**. It does no calculations: every number comes from the
-FastAPI back end (separate repository).
+Angular front end for **Stochastix AI**. Portfolio and model results come from the FastAPI
+back end (separate repository); the Technical Indicators page calculates from local CSV price data.
 
 Results are projections, not guarantees, and not investment advice.
 
@@ -11,19 +11,20 @@ Results are projections, not guarantees, and not investment advice.
 |---|---|
 | Header | Stochastix AI navigation on every page; client name, account, portfolio value, age, risk profile, and model on Quant Models |
 | 📊 MarketWatch | Main page with economic news, upcoming earnings, corporate actions, and market heatmap |
-| 📈 Quant Models | Monte Carlo simulation, portfolio settings, rebalancing, orders, methodology, and Stochastix AI chat |
+| 📈 Quant Models | Monte Carlo simulation, portfolio settings, rebalancing, orders, and methodology |
 | 📄 E*TRADE Agent | Upload text-based PDFs; transfer-activity documents show parsed cash movement totals and rows |
 | 📄 Fidelity Agent | Fidelity PDF analytics and positions CSV import with view-only holdings metrics |
 | 📉 Time Series | Upload date-aligned historical CSV data; fit linear forward-return and logistic up-probability regressions |
+| 📊 Technical Indicators | Calculate and chart RSI, MACD, and Bollinger Bands from a sample or uploaded historical price CSV |
 | Sidebar — Stochastix AI | Choose source agent, account and model portfolio; load a positions CSV or go back to the default file |
 | Sidebar — Plan assumptions | Retirement age, plan end age, annual contribution, annual withdrawal (reset per account) |
 | Sidebar — Simulation | Trials (1k–50k), seed, sampling (PRNG/LHS/Sobol), copula (Gaussian/Student-t, df 3–30), return distribution |
 | Sidebar — AI model | Ollama, OpenAI, Anthropic or **WebLLM (in browser)**; model; API-key status |
-| 🎲 Simulation tab | Positions, allocation chart and drift table, success cards, fan chart, histograms, run settings, **🎬 Investor video** |
+| 🎲 Simulation tab | Positions, allocation chart and drift table, success cards, fan chart, histograms, run settings, retirement-plan investor video |
 | ⚖️ Rebalance tab | Drift tolerance, minimum trade, whole shares; trades, allocation after trades, success before/after; Generate orders |
 | 🧾 Orders tab | Blotter with sorting and paging, metrics, Export CSV/JSON, Clear orders; badge with order count |
 | 📖 How it works tab | 30 sample paths chart and methodology panels |
-| 💬 Stochastix AI chat | Available from MarketWatch and Quant Models; example questions, markdown answers, tool trace, orders notice, **🔊 Create audio**, **🎬 Create video** |
+| 💬 Stochastix AI chat | Available on every page; example questions, markdown answers, tool trace, orders notice, **🔊 Create audio**, **🎬 Create video** |
 
 ## Simulation
 - Re-runs automatically when the account, model, plan or settings change: 400 ms debounce, duplicate requests skipped,
@@ -34,7 +35,8 @@ Results are projections, not guarantees, and not investment advice.
   histograms ("No trials ran out of money" when none fail).
 
 ## Investor video (VideoGenAgent)
-- **Simulation tab:** card below the success metrics with "Include proposed rebalance" and **Create investor video**.
+- **Quant Models — Simulation tab:** **Create investor video** generates the retirement-plan walkthrough and can include the proposed rebalance.
+- **Technical Indicators:** **Generate indicator video** narrates the selected price series and its RSI, MACD, and Bollinger Band charts. Only the displayed indicator context and its most recent 60 observations are sent when requested; no Monte Carlo simulation is run.
 - **Chat:** **Create video** under each AI answer; videos started by the AI ("make a video for Jane") appear inline.
 - Progress bar while the back end renders (~30 s), then an inline player and **Download video** (MP4, ~90 s,
   animated advisor, charts, subtitles, narration, disclaimer). Uses the on-screen plan and settings.
@@ -92,7 +94,16 @@ Results are projections, not guarantees, and not investment advice.
 - CSV contents are processed in memory and not retained. The model estimates statistical associations, not causal
   effects or investment advice; the holdout is not a validated trading strategy.
 
+## Technical Indicators
+- Calculates Wilder RSI (14 periods), MACD (12/26 EMA with a 9-period signal), and 20-period Bollinger Bands
+  (two standard deviations) in the browser from the selected date and positive price columns.
+- Opens with the built-in synthetic sample; users can upload a CSV (up to 20 MB) and choose its date and price columns.
+  At least 34 usable observations are needed to show the full MACD signal.
+- Uploaded data is processed locally in the browser and is not sent to the back end. Indicator readings are descriptive,
+  based on historical prices, and are not investment advice or predictions.
+
 ## Stochastix AI chat
+- Available on every page.
 - Sends the question with the on-screen account and model; 180 s timeout; "Thinking…" indicator.
 - Answers rendered with ngx-markdown (`$` escaped); expandable "Data used (N tool calls)".
 - Orders created by the AI refresh the Orders badge. New conversation clears memory (`crypto.randomUUID()` thread).

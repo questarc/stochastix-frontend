@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { AdvisorAiComponent } from '../advisor-ai/advisor-ai.component';
 import { MarketHeatmapComponent } from './market-heatmap.component';
 import { MarketWidgetsComponent } from './market-widgets.component';
 
 @Component({
   selector: 'app-market-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdvisorAiComponent, MarketHeatmapComponent, MarketWidgetsComponent],
+  imports: [MarketHeatmapComponent, MarketWidgetsComponent],
   template: `
     <app-market-heatmap />
     <header class="page-heading">
@@ -15,7 +14,6 @@ import { MarketWidgetsComponent } from './market-widgets.component';
       <p class="description">Market-moving news, upcoming events, corporate actions, and daily market performance.</p>
     </header>
     <app-market-widgets />
-    <app-advisor-ai />
   `,
   styles: `
     :host { display: block; }

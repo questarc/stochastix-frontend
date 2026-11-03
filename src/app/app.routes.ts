@@ -31,5 +31,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/time-series-agent/time-series-agent.component').then((m) => m.TimeSeriesAgentComponent),
   },
+  {
+    path: 'technical-indicators',
+    title: 'Technical Indicators | Stochastix AI',
+    loadComponent: () =>
+      import('./features/technical-indicators/technical-indicators.component').then(
+        (m) => m.TechnicalIndicatorsComponent,
+      ),
+  },
   { path: '**', redirectTo: '' },
 ];

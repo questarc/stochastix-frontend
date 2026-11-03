@@ -11,7 +11,6 @@ import { MethodologyTabComponent } from '../methodology/methodology-tab.componen
 import { OrdersTabComponent } from '../orders/orders-tab.component';
 import { RebalanceTabComponent } from '../rebalance/rebalance-tab.component';
 import { SimulationTabComponent } from '../simulation/simulation-tab.component';
-import { AdvisorAiComponent } from '../advisor-ai/advisor-ai.component';
 import { HeaderComponent } from '../../layout/header/header.component';
 import { SidebarComponent } from '../../layout/sidebar/sidebar.component';
 import { map } from 'rxjs';
@@ -23,7 +22,7 @@ const ORDERS_TAB_INDEX = 2;
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatBadgeModule, MatButtonModule, MatIconModule, MatSidenavModule, MatTabsModule,
-    AdvisorAiComponent, HeaderComponent, MethodologyTabComponent, OrdersTabComponent,
+    HeaderComponent, MethodologyTabComponent, OrdersTabComponent,
     RebalanceTabComponent, SidebarComponent, SimulationTabComponent,
   ],
   template: `
@@ -52,7 +51,6 @@ const ORDERS_TAB_INDEX = 2;
         </mat-tab-group>
       </mat-sidenav-content>
     </mat-sidenav-container>
-    <app-advisor-ai />
   `,
   styles: `
     :host { display: block; }
