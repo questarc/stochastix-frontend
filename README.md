@@ -36,6 +36,12 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+## Deploying to Vercel
+
+Import this repository as a Vercel project with the repository root as the project root. The included `vercel.json` builds the Angular app into `dist/frontend/browser`, serves client-side routes, and proxies `/api/*` to `https://stochastix-backend.vercel.app/api/*`.
+
+Deploy the backend first and name its Vercel project `stochastix-backend`, or update the API rewrite destination in `vercel.json` to the backend's assigned domain. Keep the frontend production API base URL as `/api` so browser requests use the same-origin proxy.
+
 ## Running unit tests
 
 To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:

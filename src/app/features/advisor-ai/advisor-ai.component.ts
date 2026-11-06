@@ -14,14 +14,6 @@ import { WEBLLM_PROVIDER_ID } from '../../core/webllm/webllm.models';
 import { WebLlmService } from '../../core/webllm/webllm.service';
 import { ChatMessageComponent } from './chat-message.component';
 
-export const EXAMPLE_QUESTIONS = [
-  'Compare the current portfolio with the model portfolio.',
-  'What if the client retires 2 years later?',
-  'How is probability of success calculated?',
-  'Which asset classes have drifted most from the model?',
-  'Simulate and rebalance this account.',
-];
-
 function newThreadId(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
@@ -49,7 +41,6 @@ export class AdvisorAiComponent {
   readonly threadId = signal(newThreadId());
   readonly draft = signal('');
 
-  protected readonly examples = EXAMPLE_QUESTIONS;
   protected readonly providerLabel = computed(() => this.workspace.llmProvider()?.label ?? this.workspace.llm().provider);
   protected readonly modelName = computed(() => this.workspace.llm().model ?? '');
   protected readonly isWebLlm = computed(() => this.workspace.llm().provider === WEBLLM_PROVIDER_ID);

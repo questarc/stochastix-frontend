@@ -22,13 +22,6 @@
       </p>
 
       <div class="messages" #scroller aria-live="polite">
-        @if (messages().length === 0) {
-          <div class="examples">
-            @for (q of examples; track q) {
-              <button mat-stroked-button type="button" (click)="send(q)">{{ q }}</button>
-            }
-          </div>
-        }
         @for (m of messages(); track $index) {
           <app-chat-message [message]="m" />
         }

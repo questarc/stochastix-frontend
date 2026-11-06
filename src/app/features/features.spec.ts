@@ -139,6 +139,17 @@ describe('AdvisorAiComponent', () => {
     await click('chat-fab');
     expect(el.querySelector('[data-testid="chat-panel"]')).toBeNull();
   });
+
+  it('shows no suggested commands and keeps the message input available on an empty chat', async () => {
+    const { fixture, el } = setup();
+    const click = el.querySelector('[data-testid="chat-fab"]') as HTMLButtonElement;
+    click.click();
+    await fixture.whenStable();
+
+    expect(el.querySelector('.examples')).toBeNull();
+    expect(el.querySelector('[data-testid="chat-panel"]')?.textContent).not.toContain('Compare the current portfolio');
+    expect(el.querySelector('[data-testid="chat-input"]')).toBeTruthy();
+  });
 });
 
 describe('ChatMessageComponent audio (VoiceGenAgent)', () => {

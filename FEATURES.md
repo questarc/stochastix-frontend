@@ -19,7 +19,7 @@ Results are projections, not guarantees, and not investment advice.
 | Sidebar — Stochastix AI | Choose source agent, account and model portfolio; load a positions CSV or go back to the default file |
 | Sidebar — Plan assumptions | Retirement age, plan end age, annual contribution, annual withdrawal (reset per account) |
 | Sidebar — Simulation | Trials (1k–50k), seed, sampling (PRNG/LHS/Sobol), copula (Gaussian/Student-t, df 3–30), return distribution |
-| Sidebar — AI model | Ollama, OpenAI, Anthropic or **WebLLM (in browser)**; model; API-key status |
+| Sidebar — AI model | NVIDIA (default), Ollama, OpenAI, Anthropic or **WebLLM (in browser)**; model; API-key status |
 | 🎲 Simulation tab | Positions, allocation chart and drift table, success cards, fan chart, histograms, run settings, retirement-plan investor video |
 | ⚖️ Rebalance tab | Drift tolerance, minimum trade, whole shares; trades, allocation after trades, success before/after; Generate orders |
 | 🧾 Orders tab | Blotter with sorting and paging, metrics, Export CSV/JSON, Clear orders; badge with order count |
